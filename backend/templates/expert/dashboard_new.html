@@ -1,0 +1,243 @@
+{% extends 'expert/base.html' %}
+{% load static %}
+
+{% block title %}Espace Expert - MRE{% endblock %}
+{% block page_title %}Tableau de bord Expert{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Welcome Header -->
+  <div class="bg-gradient-to-r from-primary to-blue-800 rounded-lg text-white p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold mb-2">Bienvenue, {{ user.first_name|default:user.name|default:"Expert" }} !</h1>
+        <p class="text-white/90">Gérez vos services d'expertise MRE depuis votre tableau de bord</p>
+      </div>
+      <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
+        <a href="{% url 'expert_demandes' %}" class="bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+          <i class="bi bi-file-earmark-text"></i>
+          <span>Voir Demandes</span>
+        </a>
+        <a href="{% url 'expert_rendezvous' %}" class="bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+          <i class="bi bi-calendar-plus"></i>
+          <span>Gérer RDV</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-blue-600">{{ total_requests|default:0 }}</div>
+      <div class="text-sm text-gray-600">Demandes Totales</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-orange-600">{{ pending_requests|default:0 }}</div>
+      <div class="text-sm text-gray-600">En Attente</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-green-600">{{ completed_requests|default:0 }}</div>
+      <div class="text-sm text-gray-600">Terminées</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-purple-600">{{ upcoming_appointments|default:0 }}</div>
+      <div class="text-sm text-gray-600">RDV à venir</div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Recent Requests -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-medium text-gray-900">Demandes Récentes</h3>
+            <a href="{% url 'expert_demandes' %}" class="text-sm text-primary hover:text-blue-700 font-medium">
+              Voir toutes
+            </a>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          {% if recent_requests %}
+            <div class="space-y-4">
+              {% for request in recent_requests %}
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                      {% if request.client.user.profile_picture %}
+                        <img class="h-10 w-10 rounded-full object-cover" src="{{ request.client.user.profile_picture.url }}" alt="Client">
+                      {% else %}
+                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                          <i class="bi bi-person-fill text-gray-600"></i>
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">{{ request.client.user.name }} {{ request.client.user.first_name }}</div>
+                      <div class="text-sm text-gray-500">{{ request.service_type|title }}</div>
+                      <div class="text-xs text-gray-400">{{ request.created_at|date:"d M Y" }}</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                      {% if request.status == 'pending' %}bg-yellow-100 text-yellow-800
+                      {% elif request.status == 'in_progress' %}bg-blue-100 text-blue-800
+                      {% elif request.status == 'completed' %}bg-green-100 text-green-800
+                      {% elif request.status == 'cancelled' %}bg-red-100 text-red-800
+                      {% else %}bg-gray-100 text-gray-800{% endif %}">
+                      {% if request.status == 'pending' %}En attente
+                      {% elif request.status == 'in_progress' %}En cours
+                      {% elif request.status == 'completed' %}Terminée
+                      {% elif request.status == 'cancelled' %}Annulée
+                      {% else %}{{ request.status|title }}{% endif %}
+                    </span>
+                    <a href="{% url 'expert_request_detail' request.id %}" class="text-primary hover:text-blue-700">
+                      <i class="bi bi-arrow-right text-sm"></i>
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-8">
+              <i class="bi bi-file-earmark-text text-4xl text-gray-300 mb-4"></i>
+              <p class="text-gray-500">Aucune demande récente</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="space-y-6">
+      <!-- Next Appointments -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Prochains RDV</h3>
+        </div>
+        <div class="p-6">
+          {% if upcoming_appointments_list %}
+            <div class="space-y-3">
+              {% for appointment in upcoming_appointments_list %}
+                <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                  <div class="flex-shrink-0">
+                    <i class="bi bi-calendar-event text-blue-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-900">{{ appointment.client.user.name }}</div>
+                    <div class="text-xs text-gray-500">{{ appointment.date|date:"d M Y" }} à {{ appointment.time|time:"H:i" }}</div>
+                    <div class="text-xs text-blue-600">{{ appointment.service_type|title }}</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-calendar text-2xl text-gray-300 mb-2"></i>
+              <p class="text-sm text-gray-500">Aucun RDV programmé</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Actions Rapides</h3>
+        </div>
+        <div class="p-6 space-y-3">
+          <a href="{% url 'expert_demandes' %}" class="block w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+            <div class="flex items-center space-x-3">
+              <i class="bi bi-file-earmark-text text-primary"></i>
+              <span class="text-sm font-medium">Gérer les demandes</span>
+            </div>
+          </a>
+          
+          <a href="{% url 'expert_rendezvous' %}" class="block w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+            <div class="flex items-center space-x-3">
+              <i class="bi bi-calendar-event text-primary"></i>
+              <span class="text-sm font-medium">Planning RDV</span>
+            </div>
+          </a>
+          
+          <a href="{% url 'expert_documents' %}" class="block w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+            <div class="flex items-center space-x-3">
+              <i class="bi bi-folder text-primary"></i>
+              <span class="text-sm font-medium">Gérer documents</span>
+            </div>
+          </a>
+          
+          <a href="{% url 'expert_messages' %}" class="block w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+            <div class="flex items-center space-x-3">
+              <i class="bi bi-chat-dots text-primary"></i>
+              <span class="text-sm font-medium">Messages clients</span>
+              {% if unread_messages_count > 0 %}
+                <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ unread_messages_count }}</span>
+              {% endif %}
+            </div>
+          </a>
+          
+          <a href="{% url 'expert_ressources' %}" class="block w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200">
+            <div class="flex items-center space-x-3">
+              <i class="bi bi-book text-primary"></i>
+              <span class="text-sm font-medium">Ressources</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Expert Status -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Statut Expert</h3>
+        </div>
+        <div class="p-6">
+          <div class="text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-3">
+              <i class="bi bi-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div class="text-sm font-medium text-gray-900">Disponible</div>
+            <div class="text-xs text-gray-500 mt-1">Expert actif et disponible</div>
+            {% if expert.specialty %}
+              <div class="mt-3 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full inline-block">
+                {{ expert.specialty }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Overview -->
+  <div class="bg-white rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-medium text-gray-900">Aperçu des Performances</h3>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="text-center">
+          <div class="text-3xl font-bold text-blue-600 mb-2">{{ completion_rate|default:"0" }}%</div>
+          <div class="text-sm text-gray-600">Taux de Completion</div>
+        </div>
+        
+        <div class="text-center">
+          <div class="text-3xl font-bold text-green-600 mb-2">{{ average_rating|default:"0" }}/5</div>
+          <div class="text-sm text-gray-600">Note Moyenne</div>
+        </div>
+        
+        <div class="text-center">
+          <div class="text-3xl font-bold text-purple-600 mb-2">{{ response_time|default:"0" }}h</div>
+          <div class="text-sm text-gray-600">Temps de Réponse</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

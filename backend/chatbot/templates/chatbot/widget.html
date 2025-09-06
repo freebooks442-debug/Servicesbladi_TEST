@@ -1,0 +1,87 @@
+{% load static %}
+
+<!-- Widget Chatbot MRE - Inclusion dans tout template -->
+<div id="chatbot-widget">
+      <!-- Bouton d'ouverture du chatbot -->
+    <div id="chatbot-button" class="chatbot-button">
+        <div class="chatbot-icon">
+            <img src="{% static 'img/CHATBOTIMAGE.png' %}" alt="Assistant MRE" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" />
+        </div>
+        <span class="chatbot-text">Assistant MRE</span>
+    </div>
+
+    <!-- Fenêtre du chatbot -->
+    <div id="chatbot-window" class="chatbot-window">        <div class="chatbot-header">
+            <div class="chatbot-avatar">
+                <img src="{% static 'img/CHATBOTIMAGE.png' %}" alt="Assistant MRE" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />
+            </div>
+            <div class="chatbot-info">
+                <h3>Assistant MRE</h3>
+                <p>Expert en services pour les Marocains à l'étranger</p>
+            </div>
+            <button id="chatbot-close" class="chatbot-close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="chatbot-messages" id="chatbot-messages">            <div class="message bot-message">                <div class="message-avatar">
+                    <img src="{% static 'img/CHATBOTIMAGE.png' %}" alt="Assistant MRE" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
+                </div><div class="message-content">
+                    <p><i class="bi bi-robot"></i> Bienvenue ! Je suis votre assistant spécialisé pour les services aux Marocains Résidant à l'Étranger.</p>
+                    <p>Je peux vous aider avec :</p>
+                    <ul>
+                        <li>📊 Questions fiscales</li>
+                        <li>🏠 Immobilier au Maroc</li>
+                        <li>💰 Investissements</li>
+                        <li>📋 Démarches administratives</li>
+                        <li>🎓 Formation professionnelle</li>
+                    </ul>
+                    <p>Comment puis-je vous aider aujourd'hui ?</p>
+                    {% if not user.is_authenticated %}
+                    <div class="action-buttons">
+                        <a href="{% url 'accounts:register' %}" class="action-btn">✨ S'inscrire</a>
+                        <a href="{% url 'accounts:login' %}" class="action-btn">🔑 Se connecter</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="chatbot-input-container">
+            <div class="chatbot-input-wrapper">
+                <input type="text" id="chatbot-input" placeholder="Posez votre question sur les services MRE..." />
+                <button id="chatbot-send" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="chatbot-typing" id="chatbot-typing" style="display: none;">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span>L'assistant tape...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration JavaScript -->
+    <script>
+        // Configuration transmise par Django
+        window.userIsClient = {{ user.is_authenticated|yesno:"true,false" }};
+        window.chatbotApiUrl = "{% url 'chatbot:chat_api' %}";
+        window.feedbackApiUrl = "{% url 'chatbot:feedback_api' %}";
+          // URLs Django pour les actions
+        window.registerUrl = "{% url 'accounts:register' %}";
+        window.loginUrl = "{% url 'accounts:login' %}";        {% if user.is_authenticated %}
+        window.serviceRequestUrl = "{% url 'custom_requests:client_requests' %}";
+        window.myServicesUrl = "{% url 'client_dashboard' %}";
+        {% endif %}
+        
+        // Token CSRF pour les requêtes POST
+        window.csrfToken = "{{ csrf_token }}";    </script>
+</div>

@@ -1,0 +1,255 @@
+{% extends 'expert/base.html' %}
+{% load static %}
+
+{% block title %}Modifier une ressource - MRE{% endblock %}
+{% block meta_description %}Modifier une ressource existante{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+      <ol class="flex items-center space-x-2 text-sm">
+        <li><a href="{% url 'expert_ressources' %}" class="text-blue-600 hover:text-blue-800">Ressources</a></li>
+        <li class="text-gray-400">/</li>
+        <li class="text-gray-900 font-medium">Modifier une ressource</li>
+      </ol>
+    </nav>
+    
+    <!-- Main Card -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <h1 class="text-xl font-semibold text-gray-900">Modifier la ressource: {{ resource.title }}</h1>
+      </div>
+      
+      <div class="p-6">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+          {% csrf_token %}
+          
+          <!-- Messages d'erreur ou de succès -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="p-4 rounded-md {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% elif message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border border-yellow-200 text-yellow-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    {% if message.tags == 'success' %}
+                      <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    {% elif message.tags == 'error' %}
+                      <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                      </svg>
+                    {% elif message.tags == 'warning' %}
+                      <svg class="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                      </svg>
+                    {% else %}
+                      <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    {% endif %}
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm">{{ message }}</p>
+                  </div>
+                  <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                      <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="inline-flex bg-transparent rounded-md p-1.5 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <!-- Titre -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Titre <span class="text-red-500">*</span>
+            </label>
+            <input type="text" name="title" value="{{ resource.title }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          
+          <!-- Catégorie -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Catégorie <span class="text-red-500">*</span>
+            </label>
+            <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Sélectionner une catégorie</option>
+              {% for code, name in resource_categories %}
+                <option value="{{ code }}" {% if resource.category == code %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Description <span class="text-red-500">*</span>
+            </label>
+            <textarea name="description" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ resource.description }}</textarea>
+          </div>
+          
+          <!-- Langues disponibles -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Langues disponibles</label>
+            <div class="space-y-2">
+              <div class="flex items-center">
+                <input id="lang_fr" type="checkbox" name="languages" value="fr" {% if 'fr' in available_languages %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <label for="lang_fr" class="ml-2 block text-sm text-gray-900">Français</label>
+              </div>
+              <div class="flex items-center">
+                <input id="lang_en" type="checkbox" name="languages" value="en" {% if 'en' in available_languages %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <label for="lang_en" class="ml-2 block text-sm text-gray-900">English</label>
+              </div>
+              <div class="flex items-center">
+                <input id="lang_ar" type="checkbox" name="languages" value="ar" {% if 'ar' in available_languages %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <label for="lang_ar" class="ml-2 block text-sm text-gray-900">العربية</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Fichiers existants -->
+          {% if files %}
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Fichiers existants</label>
+              <div class="space-y-3">
+                {% for file in files %}
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex items-center">
+                      <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      <a href="{{ file.file.url }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        {{ file.file.name|slice:"16:" }}
+                      </a>
+                    </div>
+                    <div class="flex items-center">
+                      <input id="delete_file_{{ file.id }}" type="checkbox" name="delete_file_{{ file.id }}" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                      <label for="delete_file_{{ file.id }}" class="ml-2 text-sm text-red-600 font-medium">Supprimer</label>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+          
+          <!-- Ajouter de nouveaux fichiers -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ajouter de nouveaux fichiers</label>
+            <input type="file" name="files" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <p class="mt-1 text-sm text-gray-500">Vous pouvez sélectionner plusieurs fichiers</p>
+          </div>
+          
+          <!-- Liens existants -->
+          {% if links %}
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Liens existants</label>
+              <div class="space-y-3">
+                {% for link in links %}
+                  <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1 space-y-2">
+                        <input type="text" name="link_url_{{ link.id }}" value="{{ link.url }}" placeholder="URL" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <input type="text" name="link_title_{{ link.id }}" value="{{ link.title }}" placeholder="Titre" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <input type="hidden" name="edit_link_{{ link.id }}" value="1">
+                      </div>
+                      <div class="ml-4 flex items-center">
+                        <input id="delete_link_{{ link.id }}" type="checkbox" name="delete_link_{{ link.id }}" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                        <label for="delete_link_{{ link.id }}" class="ml-2 text-sm text-red-600 font-medium">Supprimer</label>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+          
+          <!-- Ajouter de nouveaux liens -->
+          <div id="links-container">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Ajouter de nouveaux liens</label>
+            <div class="space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" name="new_links" placeholder="URL du lien" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" name="new_link_titles" placeholder="Titre du lien" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+              <button type="button" id="addLinkBtn" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Ajouter un autre lien
+              </button>
+            </div>
+          </div>
+          
+          <!-- Ressource active -->
+          <div class="flex items-center">
+            <input id="is_active" type="checkbox" name="is_active" {% if resource.is_active %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label for="is_active" class="ml-2 block text-sm text-gray-900">Ressource active (visible pour les utilisateurs)</label>
+          </div>
+          
+          <!-- Boutons d'action -->
+          <div class="flex flex-col sm:flex-row sm:justify-between gap-3 pt-6">
+            <a href="{% url 'expert_ressources' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Annuler
+            </a>
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Enregistrer les modifications
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Dynamic link addition
+    const linksContainer = document.getElementById('links-container');
+    const addLinkBtn = document.getElementById('addLinkBtn');
+    
+    if (addLinkBtn) {
+      addLinkBtn.addEventListener('click', function() {
+        const linkGroup = document.createElement('div');
+        linkGroup.className = 'grid grid-cols-2 gap-2 mt-2';
+        linkGroup.innerHTML = `
+          <input type="text" name="new_links" placeholder="URL du lien" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <div class="flex gap-2">
+            <input type="text" name="new_link_titles" placeholder="Titre du lien" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <button type="button" class="px-2 py-2 border border-red-300 shadow-sm text-sm font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 remove-link">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        `;
+        
+        // Insert before the add button
+        const buttonContainer = addLinkBtn.parentElement;
+        buttonContainer.parentNode.insertBefore(linkGroup, buttonContainer);
+        
+        // Add remove event listener
+        const removeBtn = linkGroup.querySelector('.remove-link');
+        removeBtn.addEventListener('click', function() {
+          linkGroup.remove();
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

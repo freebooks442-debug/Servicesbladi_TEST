@@ -1,0 +1,52 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Rappel de rendez-vous - ServicesBladi{% endblock %}
+
+{% block content %}
+<!-- Reminder Icon -->
+<div class="icon-container warning">
+    <span class="icon">⏰</span>
+</div>
+
+<!-- Main Message -->
+<h1 class="title">Rappel de rendez-vous</h1>
+<p class="subtitle">Votre rendez-vous avec {{ expert_name }} a lieu demain</p>
+
+<!-- Appointment Details -->
+<div class="info-box warning">
+    <div class="info-title">📅 Détails du rendez-vous :</div>
+    <div class="info-text">
+        <strong>Date :</strong> {{ appointment_date }}<br>
+        <strong>Heure :</strong> {{ appointment_time }}<br>
+        <strong>Type :</strong> {{ appointment_type }}<br>
+        <strong>Expert :</strong> {{ expert_name }}
+    </div>
+</div>
+
+<!-- Preparation Checklist -->
+<div class="info-box primary">
+    <div class="info-title">✅ À préparer :</div>
+    <div class="info-text">
+        • Vos documents requis<br>
+        • Vos questions préparées<br>
+        • Connexion internet stable<br>
+        • Confirmation de disponibilité
+    </div>
+</div>
+
+<!-- Action Button -->
+<a href="https://servicesbladi.com/accounts/dashboard/" class="button warning">
+    Accéder au rendez-vous
+</a>
+{% endblock %}
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/accounts/dashboard/" class="button">
+        📅 Accéder à mon rendez-vous
+    </a>
+</div>
+
+<div class="content" style="background-color: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #27ae60;">
+    <strong>🚀 Besoin de reporter?</strong> Contactez votre expert ou notre support au moins 2h avant le rendez-vous.
+</div>
+{% endblock %}

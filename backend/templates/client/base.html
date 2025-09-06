@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ServicesBladi - Client{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Espace client services administratifs Maroc{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}maroc, administratif, client{% endblock %}">
+
+  <!-- Favicons -->
+  <link href="{% static 'img/favicon.png' %}" rel="icon">
+  <link href="{% static 'img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <!-- Notification System CSS -->
+  <link href="{% static 'css/notifications.css' %}?v={{ cache_version }}" rel="stylesheet">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e40af',
+            secondary: '#c49a5a',
+            accent: '#06b6d4',
+            dark: '#1f2937',
+            light: '#f8fafc'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  {% block extra_styles %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 font-sans">
+  <div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <div class="hidden md:flex md:w-64 md:flex-col">
+      <div class="flex flex-col flex-grow pt-5 bg-gradient-to-br from-primary to-blue-800 overflow-y-auto">
+        <!-- Logo/Brand -->
+        <div class="flex items-center flex-shrink-0 px-4">
+          <div class="flex items-center">
+            <img class="h-8 w-auto" src="{% static 'img/favicon.png' %}" alt="ServicesBladi">
+            <span class="ml-2 text-lg font-semibold text-white">ServicesBladi</span>
+          </div>
+        </div>
+
+        <!-- Client Profile Section -->
+        <div class="mt-6 px-4">
+          <div class="bg-white/10 rounded-xl p-4 text-center">
+            <div class="relative inline-block">
+              <img class="h-16 w-16 rounded-full object-cover border-3 border-white/30 profile-image" src="{{ user.get_profile_picture_url }}" alt="Profile">
+              <div class="absolute -bottom-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-white"></div>
+            </div>
+            <h3 class="mt-2 text-sm font-medium text-white">{{ user.first_name|default:user.name|default:"Client" }}</h3>
+            <p class="text-xs text-white/70">Client MRE</p>
+            <button onclick="openProfileModal()" class="mt-2 text-xs text-white/80 hover:text-white transition-colors">
+              <i class="bi bi-gear"></i> Paramètres
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="mt-6 flex-1 px-2 space-y-1">
+          <a href="{% url 'client_dashboard' %}" class="{% if request.resolver_match.url_name == 'client_dashboard' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-speedometer2 mr-3 text-lg"></i>
+            Tableau de bord
+          </a>
+          
+          <a href="{% url 'client_demandes' %}" class="{% if request.resolver_match.url_name == 'client_demandes' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-file-earmark-text mr-3 text-lg"></i>
+            Mes Demandes
+          </a>
+          
+          <a href="{% url 'client_rendezvous' %}" class="{% if request.resolver_match.url_name == 'client_rendezvous' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-calendar-event mr-3 text-lg"></i>
+            Rendez-vous
+          </a>
+          
+          <a href="{% url 'client_documents' %}" class="{% if request.resolver_match.url_name == 'client_documents' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-folder mr-3 text-lg"></i>
+            Documents
+          </a>
+          
+          <a href="{% url 'client_messages' %}" class="{% if request.resolver_match.url_name == 'client_messages' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-chat-dots mr-3 text-lg"></i>
+            Messages
+            {% if unread_messages_count > 0 %}
+              <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ unread_messages_count }}</span>
+            {% endif %}
+          </a>
+          
+          <a href="{% url 'client_ressources' %}" class="{% if request.resolver_match.url_name == 'client_ressources' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-book mr-3 text-lg"></i>
+            Ressources
+          </a>
+        </nav>
+
+        <!-- Logout Button -->
+        <div class="flex-shrink-0 px-2 pb-4">
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-white/70 hover:bg-white/10 hover:text-white group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+              <i class="bi bi-box-arrow-right mr-3 text-lg"></i>
+              Déconnexion
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu button -->
+    <div class="md:hidden">
+      <div class="fixed inset-0 flex z-40" id="mobile-menu" style="display: none;">
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" onclick="toggleMobileMenu()"></div>
+        <div class="relative flex-1 flex flex-col max-w-xs w-full bg-gradient-to-br from-primary to-blue-800">
+          <div class="absolute top-0 right-0 -mr-12 pt-2">
+            <button onclick="toggleMobileMenu()" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+              <span class="sr-only">Close sidebar</span>
+              <i class="bi bi-x-lg text-white text-lg"></i>
+            </button>
+          </div>
+          
+          <!-- Mobile sidebar content (same as desktop) -->
+          <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+            <div class="flex items-center flex-shrink-0 px-4">
+              <img class="h-8 w-auto" src="{% static 'img/favicon.png' %}" alt="ServicesBladi">
+              <span class="ml-2 text-lg font-semibold text-white">ServicesBladi</span>
+            </div>
+            
+            <!-- Mobile Client Profile Section -->
+            <div class="mt-6 px-4">
+              <div class="bg-white/10 rounded-xl p-4 text-center">
+                <div class="relative inline-block">
+                  <img class="h-16 w-16 rounded-full object-cover border-3 border-white/30 profile-image" src="{{ user.get_profile_picture_url }}" alt="Profile">
+                  <div class="absolute -bottom-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-white"></div>
+                </div>
+                <h3 class="mt-2 text-sm font-medium text-white">{{ user.first_name|default:user.name|default:"Client" }}</h3>
+                <p class="text-xs text-white/70">Client MRE</p>
+                <button onclick="openProfileModal(); toggleMobileMenu();" class="mt-2 text-xs text-white/80 hover:text-white transition-colors">
+                  <i class="bi bi-gear"></i> Paramètres
+                </button>
+              </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <nav class="mt-6 px-2 space-y-1">
+              <a href="{% url 'client_dashboard' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'client_dashboard' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-speedometer2 mr-3 text-lg"></i>
+                Tableau de bord
+              </a>
+              
+              <a href="{% url 'client_demandes' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'client_demandes' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-file-earmark-text mr-3 text-lg"></i>
+                Mes Demandes
+              </a>
+              
+              <a href="{% url 'client_rendezvous' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'client_rendezvous' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-calendar-event mr-3 text-lg"></i>
+                Rendez-vous
+              </a>
+              
+              <a href="{% url 'client_documents' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'client_documents' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-folder mr-3 text-lg"></i>
+                Documents
+              </a>
+              
+              <a href="{% url 'client_messages' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'client_messages' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-chat-dots mr-3 text-lg"></i>
+                Messages
+                {% if unread_messages_count > 0 %}
+                  <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ unread_messages_count }}</span>
+                {% endif %}
+              </a>
+              
+              <a href="{% url 'client_ressources' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'client_ressources' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-book mr-3 text-lg"></i>
+                Ressources
+              </a>
+            </nav>
+            
+            <!-- Mobile Logout Button -->
+            <div class="mt-4 px-2">
+              <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full text-white/70 hover:bg-white/10 hover:text-white group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                  <i class="bi bi-box-arrow-right mr-3 text-lg"></i>
+                  Déconnexion
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content area -->
+    <div class="flex flex-col flex-1 overflow-hidden">
+      <!-- Mobile header -->
+      <div class="md:hidden bg-white shadow">
+        <div class="px-4 py-2 flex items-center justify-between">
+          <button onclick="toggleMobileMenu()" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+            <span class="sr-only">Open sidebar</span>
+            <i class="bi bi-list text-xl"></i>
+          </button>
+          
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center">
+              <img class="h-8 w-auto" src="{% static 'img/favicon.png' %}" alt="ServicesBladi">
+              <span class="ml-2 text-lg font-semibold text-gray-900">ServicesBladi</span>
+            </div>
+            
+            <!-- Mobile notifications -->
+            <div class="md:hidden">
+              {% include 'components/notifications.html' with notification_id_suffix='mobile' %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop top bar -->
+      <div class="hidden md:flex bg-white shadow-sm border-b">
+        <div class="flex-1 px-4 py-3 sm:px-6">
+          <div class="flex items-center justify-between">
+            <!-- Page title will be inserted here by individual templates -->
+            <div class="flex items-center">
+              {% block page_header %}
+                <h1 class="text-xl font-semibold text-gray-900">Tableau de bord</h1>
+              {% endblock %}
+            </div>
+            
+            <!-- Desktop notifications and profile -->
+            <div class="flex items-center space-x-3">
+              <!-- Notifications -->
+              <div class="hidden md:block">
+                {% include 'components/notifications.html' with notification_id_suffix='desktop' %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <main class="flex-1 overflow-y-auto bg-gray-50">
+        <div class="py-4">
+          <div class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Profil Utilisateur</h3>
+          <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        
+        <!-- Profile Picture Preview -->
+        <div class="flex justify-center mb-6">
+          <div class="relative">
+            <img id="profile-preview" class="h-20 w-20 rounded-full object-cover border-4 border-gray-200" src="{{ user.get_profile_picture_url }}" alt="Profile">
+            <button type="button" onclick="document.getElementById('profile_picture').click()" class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 hover:bg-primary/90 transition-colors">
+              <i class="bi bi-camera text-xs"></i>
+            </button>
+          </div>
+        </div>
+        
+        <form method="post" action="{% url 'accounts:edit_profile' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <!-- Basic Information -->
+          <div class="mb-6">
+            <h4 class="text-md font-medium text-gray-900 mb-4">Informations de base</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <input type="text" id="name" name="name" value="{{ user.name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                <input type="tel" id="phone" name="phone" value="{{ user.phone|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
+                <input type="date" id="birth_date" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label for="residence_country" class="block text-sm font-medium text-gray-700 mb-1">Pays de résidence</label>
+                <input type="text" id="residence_country" name="residence_country" value="{{ user.residence_country|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Client-specific Information -->
+          <div class="mb-6 border-t pt-4">
+            <h4 class="text-md font-medium text-gray-900 mb-4">Informations MRE</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {% if user.client_profile %}
+              <div>
+                <label for="origin_country" class="block text-sm font-medium text-gray-700 mb-1">Pays d'origine</label>
+                <input type="text" id="origin_country" name="origin_country" value="{{ user.client_profile.origin_country|default:'Maroc' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label for="last_visit" class="block text-sm font-medium text-gray-700 mb-1">Dernière visite au Maroc</label>
+                <input type="date" id="last_visit" name="last_visit" value="{{ user.client_profile.last_visit|date:'Y-m-d' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div class="md:col-span-2">
+                <div class="flex items-center">
+                  <input type="checkbox" id="mre_status" name="mre_status" {% if user.client_profile.mre_status %}checked{% endif %} class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                  <label for="mre_status" class="ml-2 block text-sm text-gray-700">Je suis un Marocain Résidant à l'Étranger (MRE)</label>
+                </div>
+              </div>
+              {% endif %}
+              
+              <div class="md:col-span-2">
+                <label for="preferred_languages" class="block text-sm font-medium text-gray-700 mb-1">Langues préférées</label>
+                <select id="preferred_languages" name="preferred_languages" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                  <option value="fr" {% if user.preferred_languages == 'fr' %}selected{% endif %}>Français</option>
+                  <option value="ar" {% if user.preferred_languages == 'ar' %}selected{% endif %}>العربية</option>
+                  <option value="en" {% if user.preferred_languages == 'en' %}selected{% endif %}>English</option>
+                  <option value="es" {% if user.preferred_languages == 'es' %}selected{% endif %}>Español</option>
+                  <option value="fr,ar" {% if user.preferred_languages == 'fr,ar' %}selected{% endif %}>Français + العربية</option>
+                  <option value="fr,en" {% if user.preferred_languages == 'fr,en' %}selected{% endif %}>Français + English</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Profile Picture Upload -->
+          <div class="mb-6 border-t pt-4">
+            <h4 class="text-md font-medium text-gray-900 mb-4">Photo de profil</h4>
+            <div>
+              <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" onchange="previewProfilePicture(this)">
+              <p class="text-sm text-gray-500 mt-1">Formats acceptés: JPG, PNG, GIF. Taille max: 5MB</p>
+            </div>
+          </div>
+          
+          <!-- Password Change Section -->
+          <div class="mb-6 border-t pt-4">
+            <h4 class="text-md font-medium text-gray-900 mb-4">Changer le mot de passe</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="current_password" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</label>
+                <input type="password" id="current_password" name="current_password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label for="new_password" class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+                <input type="password" id="new_password" name="new_password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">Laissez vide si vous ne souhaitez pas changer votre mot de passe</p>
+          </div>
+          
+          <div class="flex items-center justify-end space-x-3 pt-4">
+            <button type="button" onclick="closeProfileModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+              Annuler
+            </button>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors">
+              Sauvegarder
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      if (menu.style.display === 'none' || menu.style.display === '') {
+        menu.style.display = 'flex';
+      } else {
+        menu.style.display = 'none';
+      }
+    }
+
+    function openProfileModal() {
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    // Profile picture preview function
+    function previewProfilePicture(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('profile-preview').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+  </script>
+
+  <!-- Modern Notification System -->
+  <script src="{% static 'js/notifications.js' %}?v={{ cache_version }}"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

@@ -1,0 +1,285 @@
+{% extends 'client/base.html' %}
+
+{% block title %}Ressources - MRE{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Ressources et Guides</h1>
+      <p class="text-gray-600">Accédez à nos guides et ressources utiles pour vos démarches MRE</p>
+    </div>
+    <a href="{% url 'client_dashboard' %}" class="mt-4 sm:mt-0 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+      <i class="bi bi-house-door"></i>
+      Retour au tableau de bord
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <form method="get" action="{% url 'client_ressources' %}">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie</label>
+          <select name="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+            <option value="">Toutes les catégories</option>
+            <option value="administrative" {% if selected_category == 'administrative' %}selected{% endif %}>Administrative</option>
+            <option value="fiscal" {% if selected_category == 'fiscal' %}selected{% endif %}>Fiscale</option>
+            <option value="tourism" {% if selected_category == 'tourism' %}selected{% endif %}>Tourisme</option>
+            <option value="real_estate" {% if selected_category == 'real_estate' %}selected{% endif %}>Immobilier</option>
+            <option value="investment" {% if selected_category == 'investment' %}selected{% endif %}>Investissement</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
+          <input type="text" name="search" placeholder="Rechercher une ressource..." value="{{ search|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200">
+            Filtrer
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Resources Categories -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Administrative Category -->
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+      <div class="flex items-center mb-4">
+        <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white">
+          <i class="bi bi-file-earmark-text text-xl"></i>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-semibold text-gray-900">Services Administratifs</h3>
+          <p class="text-sm text-gray-600">Démarches officielles</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Carte Nationale d'Identité</h4>
+          <p class="text-sm text-gray-600 mb-2">Guide pour renouveler votre CIN depuis l'étranger</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Passeport Marocain</h4>
+          <p class="text-sm text-gray-600 mb-2">Procédure de renouvellement et documents requis</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Actes d'État Civil</h4>
+          <p class="text-sm text-gray-600 mb-2">Obtenir extraits de naissance, mariage, décès</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fiscal Category -->
+    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
+      <div class="flex items-center mb-4">
+        <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white">
+          <i class="bi bi-calculator text-xl"></i>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-semibold text-gray-900">Services Fiscaux</h3>
+          <p class="text-sm text-gray-600">Obligations fiscales</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Déclaration d'Impôts</h4>
+          <p class="text-sm text-gray-600 mb-2">Guide pour déclarer vos revenus au Maroc</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Conventions Fiscales</h4>
+          <p class="text-sm text-gray-600 mb-2">Éviter la double imposition</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">TVA et Entreprises</h4>
+          <p class="text-sm text-gray-600 mb-2">Obligations TVA pour les MRE entrepreneurs</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tourism Category -->
+    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+      <div class="flex items-center mb-4">
+        <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center text-white">
+          <i class="bi bi-airplane text-xl"></i>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-semibold text-gray-900">Tourisme</h3>
+          <p class="text-sm text-gray-600">Voyages et séjours</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Voyage Organisé MRE</h4>
+          <p class="text-sm text-gray-600 mb-2">Réductions et facilités pour les MRE</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Voir les offres →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Hébergement</h4>
+          <p class="text-sm text-gray-600 mb-2">Hôtels et résidences partenaires</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Voir les offres →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Transport</h4>
+          <p class="text-sm text-gray-600 mb-2">Tarifs préférentiels transport</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Voir les offres →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real Estate Category -->
+    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 border border-orange-200">
+      <div class="flex items-center mb-4">
+        <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center text-white">
+          <i class="bi bi-house text-xl"></i>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-semibold text-gray-900">Immobilier</h3>
+          <p class="text-sm text-gray-600">Achat et vente</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Achat Immobilier</h4>
+          <p class="text-sm text-gray-600 mb-2">Guide d'achat pour les MRE</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Financement</h4>
+          <p class="text-sm text-gray-600 mb-2">Crédits immobiliers pour MRE</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Gestion Locative</h4>
+          <p class="text-sm text-gray-600 mb-2">Gérer vos biens depuis l'étranger</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Investment Category -->
+    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-6 border border-yellow-200">
+      <div class="flex items-center mb-4">
+        <div class="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center text-white">
+          <i class="bi bi-graph-up text-xl"></i>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-semibold text-gray-900">Investissement</h3>
+          <p class="text-sm text-gray-600">Opportunités business</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Création d'Entreprise</h4>
+          <p class="text-sm text-gray-600 mb-2">Guide pour créer votre entreprise au Maroc</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Investissement Agricole</h4>
+          <p class="text-sm text-gray-600 mb-2">Opportunités dans l'agriculture</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Partenariats</h4>
+          <p class="text-sm text-gray-600 mb-2">Trouver des partenaires locaux</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Télécharger le guide →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support Category -->
+    <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border border-red-200">
+      <div class="flex items-center mb-4">
+        <div class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center text-white">
+          <i class="bi bi-headset text-xl"></i>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-semibold text-gray-900">Support & Aide</h3>
+          <p class="text-sm text-gray-600">Assistance personnalisée</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">FAQ</h4>
+          <p class="text-sm text-gray-600 mb-2">Questions fréquemment posées</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Consulter la FAQ →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Contact Expert</h4>
+          <p class="text-sm text-gray-600 mb-2">Parler avec un conseiller spécialisé</p>
+          <a href="{% url 'client_rendezvous' %}" class="text-primary hover:text-primary/80 text-sm font-medium">Prendre rendez-vous →</a>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <h4 class="font-medium text-gray-900 mb-1">Formulaires</h4>
+          <p class="text-sm text-gray-600 mb-2">Télécharger les formulaires officiels</p>
+          <a href="#" class="text-primary hover:text-primary/80 text-sm font-medium">Accéder aux formulaires →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Latest Resources -->
+  {% if resources %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-6">Dernières Ressources Ajoutées</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for resource in resources %}
+          <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <h3 class="font-medium text-gray-900 mb-1">{{ resource.title }}</h3>
+                <p class="text-sm text-gray-600 mb-2">{{ resource.description|truncatewords:15 }}</p>
+                <span class="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {{ resource.get_category_display }}
+                </span>
+              </div>
+              {% if resource.file_type == 'pdf' %}
+                <i class="bi bi-file-pdf text-red-500 text-xl ml-2"></i>
+              {% elif resource.file_type == 'doc' %}
+                <i class="bi bi-file-word text-blue-500 text-xl ml-2"></i>
+              {% else %}
+                <i class="bi bi-file-text text-gray-500 text-xl ml-2"></i>
+              {% endif %}
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-500">{{ resource.created_at|date:"d/m/Y" }}</span>
+              <a href="{{ resource.file.url }}" target="_blank" class="text-primary hover:text-primary/80 text-sm font-medium">
+                Télécharger
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Quick Actions -->
+  <div class="mt-8 bg-gradient-to-r from-primary to-secondary rounded-lg p-6 text-white">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 class="text-xl font-semibold mb-2">Besoin d'aide personnalisée ?</h2>
+        <p class="text-white/90">Nos experts sont là pour vous accompagner dans vos démarches.</p>
+      </div>
+      <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
+        <a href="{% url 'client_rendezvous' %}" class="bg-white hover:bg-gray-100 text-primary font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+          <i class="bi bi-calendar-plus"></i>
+          Prendre rendez-vous
+        </a>
+        <a href="{% url 'client_messages' %}" class="bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+          <i class="bi bi-chat-dots"></i>
+          Contacter un expert
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

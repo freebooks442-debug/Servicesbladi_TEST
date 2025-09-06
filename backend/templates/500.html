@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Erreur du serveur" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .error-content {
+        max-width: 600px;
+    }
+    
+    .error-code {
+        font-size: 8rem;
+        font-weight: bold;
+        color: #e74c3c;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .error-title {
+        font-size: 2rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+    
+    .error-description {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .btn-home {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-block;
+        transition: transform 0.2s;
+        margin-right: 10px;
+    }
+    
+    .btn-contact {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-block;
+        transition: transform 0.2s;
+    }
+    
+    .btn-home:hover,
+    .btn-contact:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .error-icon {
+        font-size: 4rem;
+        color: #e74c3c;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-tools"></i>
+        </div>
+        <div class="error-code">500</div>
+        <h1 class="error-title">{% trans "Erreur du serveur" %}</h1>
+        <p class="error-description">
+            {% trans "Une erreur interne s'est produite sur le serveur. Notre équipe technique a été automatiquement notifiée et travaille pour résoudre le problème." %}
+        </p>
+        <div>
+            <a href="{% url 'home' %}" class="btn btn-home">
+                <i class="fas fa-home me-2"></i>{% trans "Retour à l'accueil" %}
+            </a>
+            <a href="{% url 'contact' %}" class="btn btn-contact">
+                <i class="fas fa-envelope me-2"></i>{% trans "Nous contacter" %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

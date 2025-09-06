@@ -1,0 +1,498 @@
+{% extends 'expert/base.html' %}
+{% load static %}
+
+{% block title %}Messagerie - MRE{% endblock %}
+{% block page_title %}Messagerie{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-gray-900">Messagerie</h2>
+      {% if unread_messages_count > 0 %}
+      <div class="flex items-center space-x-2">
+        <div class="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+          <i class="bi bi-bell mr-2"></i>
+          {{ unread_messages_count }} non lu{{ unread_messages_count|pluralize }}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Chat Interface -->
+  <div class="chat-container">
+    <!-- Contacts List -->
+    <div class="contacts-list">
+      <div class="contacts-header">
+        <div class="relative">
+          <input type="text" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Rechercher..." id="contactSearch">
+          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      {% if clients %}
+        {% for client in clients %}
+          <div class="contact-item {% if active_client.id == client.id %}active{% endif %}" data-contact-id="{{ client.id }}">
+            <img src="{{ client.get_profile_picture_url }}" alt="{{ client.get_full_name }}" class="contact-avatar">
+            <div class="contact-info">
+              <div class="contact-name">{{ client.get_full_name|default:client.email }}</div>
+              <div class="contact-preview">{{ client.last_message|default:"Nouveau client" }}</div>
+            </div>
+            <div class="contact-meta">
+              {% if client.last_message_time %}
+                <div class="contact-time">{{ client.last_message_time|date:"H:i" }}</div>
+              {% endif %}
+              {% if client.unread_count > 0 %}
+                <div class="contact-unread">{{ client.unread_count }}</div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="contact-item active">
+          <img src="{% static 'img/admin-default.png' %}" alt="Support" class="contact-avatar">
+          <div class="contact-info">
+            <div class="contact-name">Support ServicesBladi</div>
+            <div class="contact-preview">Aucun client pour le moment</div>
+          </div>
+          <div class="contact-meta">
+            <div class="contact-time">Aujourd'hui</div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Chat Main Area -->
+    <div class="chat-main">
+      {% if active_client %}
+        <div class="chat-header">
+          <button class="btn btn-sm btn-outline-secondary me-2 d-lg-none" id="showContacts">
+            <i class="bi bi-arrow-left"></i>
+          </button>
+          <img src="{{ active_client.get_profile_picture_url }}" alt="{{ active_client.get_full_name }}" class="chat-avatar">
+          <div class="chat-contact-info">
+            <div class="chat-contact-name">{{ active_client.get_full_name|default:active_client.email }}</div>
+            <div class="chat-contact-status">
+              Client
+              {% if active_client.service %}
+                • {{ active_client.service }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+          {% for message in messages|slice:":50" %}
+            <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+              <div class="message-content">
+                <div>{{ message.content|truncatechars:2000|linebreaksbr|escape }}</div>
+                <div class="message-time">{{ message.sent_at|date:"H:i" }}</div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="empty-conversation">
+              <i class="bi bi-chat-dots"></i>
+              <h4>Commencez une conversation</h4>
+              <p>Envoyez un message pour démarrer la conversation</p>
+            </div>
+          {% endfor %}
+        </div>
+        
+        <form class="chat-input" id="messageForm" action="{% url 'expert_send_message' active_client.id %}" method="post">
+          {% csrf_token %}
+          <input type="text" name="message" placeholder="Tapez votre message..." id="messageInput" required>
+          <button type="submit">
+            <i class="bi bi-send"></i>
+          </button>
+        </form>
+      {% else %}
+        <div class="empty-conversation">
+          <i class="bi bi-chat-dots"></i>
+          <h4>Sélectionnez un client</h4>
+          <p>Choisissez un client dans la liste pour commencer à discuter</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Chat interface styles - Matching client design exactly */
+  .chat-container {
+    display: flex;
+    height: calc(100vh - 210px);
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .contacts-list {
+    width: 300px;
+    border-right: 1px solid #eee;
+    overflow-y: auto;
+  }
+
+  .contacts-header {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+  }
+
+  .contact-item {
+    display: flex;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+    transition: background 0.2s;
+    align-items: center;
+  }
+
+  .contact-item:hover, .contact-item.active {
+    background: #f8f9fa;
+  }
+
+  .contact-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    object-fit: cover;
+  }
+
+  .contact-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .contact-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .contact-preview {
+    font-size: 0.8rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .contact-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-left: 0.5rem;
+  }
+
+  .contact-time {
+    font-size: 0.7rem;
+    color: #999;
+    margin-bottom: 0.25rem;
+  }
+
+  .contact-unread {
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+  }
+
+  .chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    object-fit: cover;
+  }
+
+  .chat-contact-info {
+    flex: 1;
+  }
+
+  .chat-contact-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .chat-contact-status {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+
+  .chat-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    background: #f8f9fa;
+  }
+
+  .message {
+    margin-bottom: 1rem;
+    display: flex;
+  }
+
+  .message.sent {
+    justify-content: flex-end;
+  }
+
+  .message.received {
+    justify-content: flex-start;
+  }
+
+  .message-content {
+    max-width: 70%;
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    position: relative;
+  }
+
+  .message.sent .message-content {
+    background: #007bff;
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .message.received .message-content {
+    background: white;
+    border: 1px solid #eee;
+    border-bottom-left-radius: 4px;
+  }
+
+  .message-time {
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+    opacity: 0.7;
+  }
+
+  .message.sent .message-time {
+    text-align: right;
+  }
+
+  .chat-input {
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    background: white;
+  }
+
+  .chat-input input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
+    outline: none;
+    margin-right: 0.5rem;
+  }
+
+  .chat-input input:focus {
+    border-color: #007bff;
+  }
+
+  .chat-input button {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .chat-input button:hover {
+    background: #0056b3;
+  }
+
+  .empty-conversation {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    text-align: center;
+  }
+
+  .empty-conversation i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-conversation h4 {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .chat-container {
+      height: calc(100vh - 140px);
+    }
+    
+    .contacts-list {
+      width: 100%;
+      position: absolute;
+      z-index: 20;
+      height: 100%;
+    }
+    
+    .chat-main {
+      width: 100%;
+      position: absolute;
+      z-index: 10;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .chat-container.chat-active .chat-main {
+      transform: translateX(0);
+    }
+    
+    .chat-container.chat-active .contacts-list {
+      transform: translateX(-100%);
+    }
+    
+    .message-content {
+      max-width: 85%;
+    }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Mobile responsive messaging functionality
+  const showContactsBtn = document.getElementById('showContacts');
+  const contactsList = document.querySelector('.contacts-list');
+  const chatContainer = document.querySelector('.chat-container');
+  
+  // Back to contacts functionality
+  if (showContactsBtn && contactsList && chatContainer) {
+    showContactsBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Remove chat-active class to show contacts list
+      chatContainer.classList.remove('chat-active');
+      
+      // Navigate back to messages without client parameter
+      setTimeout(() => {
+        window.location.href = "{% url 'expert_messages' %}";
+      }, 300);
+    });
+  }
+  
+  // Handle contact item clicks with mobile responsiveness
+  const contactItems = document.querySelectorAll('.contact-item');
+  contactItems.forEach(item => {
+    item.addEventListener('click', function() {
+      // Get contact ID
+      const contactId = this.dataset.contactId;
+      if (contactId) {
+        // For mobile: Show chat area immediately
+        if (window.innerWidth <= 768 && chatContainer) {
+          chatContainer.classList.add('chat-active');
+          
+          // Add a small delay before navigation
+          setTimeout(() => {
+            window.location.href = "{% url 'expert_messages' %}?client=" + contactId;
+          }, 300);
+        } else {
+          // Desktop: Navigate immediately
+          window.location.href = "{% url 'expert_messages' %}?client=" + contactId;
+        }
+      }
+    });
+  });
+  
+  // Initialize mobile view
+  function initMobileView() {
+    if (window.innerWidth <= 768 && chatContainer) {
+      {% if active_client %}
+        chatContainer.classList.add('chat-active');
+      {% else %}
+        chatContainer.classList.remove('chat-active');
+      {% endif %}
+    }
+  }
+  
+  // Run on load and resize
+  initMobileView();
+  window.addEventListener('resize', initMobileView);
+  
+  // Auto-scroll to bottom of messages
+  const chatMessages = document.getElementById('chatMessages');
+  if (chatMessages) {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  
+  // Handle message form submission
+  const messageForm = document.getElementById('messageForm');
+  const messageInput = document.getElementById('messageInput');
+  
+  if (messageForm && messageInput) {
+    messageForm.addEventListener('submit', function(e) {
+      if (messageInput.value.trim() === '') {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+  
+  // Search functionality
+  const contactSearch = document.getElementById('contactSearch');
+  if (contactSearch) {
+    contactSearch.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const contacts = document.querySelectorAll('.contact-item');
+      
+      contacts.forEach(contact => {
+        const name = contact.querySelector('.contact-name').textContent.toLowerCase();
+        const preview = contact.querySelector('.contact-preview').textContent.toLowerCase();
+        
+        if (name.includes(searchTerm) || preview.includes(searchTerm)) {
+          contact.style.display = 'flex';
+        } else {
+          contact.style.display = 'none';
+        }
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

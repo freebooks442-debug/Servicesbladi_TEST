@@ -1,0 +1,472 @@
+{% extends 'general/base.html' %}
+{% load static %}
+
+{% block title %}Services Bladi - À propos{% endblock %}
+{% block meta_description %}À propos de Services Bladi - Services pour les Marocains Résidant à l'Étranger{% endblock %}
+{% block meta_keywords %}MRE, Maroc, services, expatriés, diaspora{% endblock %}
+
+{% block extra_css %}
+<style>
+  .about-section {
+    padding: 60px 0;
+  }
+  .about-content {
+    margin-bottom: 30px;
+  }
+  .team-member {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .team-member img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+  }
+  .values-section {
+    background-color: #f8f9fa;
+    padding: 60px 0;
+  }
+  .value-item {
+    text-align: center;
+    padding: 30px;
+    margin-bottom: 30px;
+  }
+  .value-item i {
+    font-size: 48px;
+    color: #0d6efd;
+    margin-bottom: 20px;
+  }
+  #hero {
+    height: 9cm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+
+ <style>
+        body {
+            background-color: #f4f4f4;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: #ffc107;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+        }
+        .card-header i {
+            margin-right: 10px;
+        }
+    </style>
+
+
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block body_class %}index-page{% endblock %}
+
+{% block content %}
+  <section id="hero" class="hero section dark-background">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 class="text-center">À propos de Services Bladi</h1>
+          <p class="text-center">Notre mission est d'accompagner les Marocains Résidant à l'Étranger dans leurs projets</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="about-content">
+            <h2>Notre Histoire</h2>
+            <p>Services Bladi a été créé pour répondre aux besoins spécifiques des Marocains vivant à l'étranger. Notre plateforme offre une gamme complète de services pour faciliter leurs démarches administratives et projets au Maroc.</p>
+            <p>Depuis notre création, nous avons accompagné des milliers de Marocains dans leurs projets touristiques, administratifs, d'investissement, immobiliers et fiscaux.</p>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="about-content">
+            <h2>Notre Mission</h2>
+            <p>Nous nous engageons à fournir des services de qualité, adaptés aux besoins des Marocains de l'étranger. Notre objectif est de simplifier leurs démarches administratives  et de les accompagner dans la réalisation de leurs projets.</p>
+            <p>Grâce à notre réseau de partenaires et notre expertise, nous offrons des solutions personnalisées et efficaces.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="values-section">
+    <div class="container">
+      <h2 class="text-center mb-5">Nos Valeurs</h2>
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="value-item">
+            <i class="bi bi-people"></i>
+            <h3>Confiance</h3>
+            <p>Nous construisons des relations de confiance avec nos clients, en garantissant la transparence et l'intégrité dans toutes nos actions.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="value-item">
+            <i class="bi bi-star"></i>
+            <h3>Excellence</h3>
+            <p>Nous nous engageons à fournir des services de la plus haute qualité, en nous appuyant sur notre expertise et notre expérience.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="value-item">
+            <i class="bi bi-heart"></i>
+            <h3>Engagement</h3>
+            <p>Nous sommes dévoués à la satisfaction de nos clients et à la réussite de leurs projets, en leur offrant un accompagnement personnalisé.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="team-section py-5">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold">Mehdi ABOULFARAJ</h2>
+      <div class="row align-items-center g-4">
+        <div class="col-lg-4 col-md-5 col-sm-6 mx-auto text-center">
+          <div class="position-relative d-inline-block">
+            <img src="{% static 'img/team/team-1.jpg' %}" alt="Équipe ServicesBladi"
+                 class="img-fluid shadow-lg"
+                 style="width: 100%; max-width: 280px; height: 280px; object-fit: cover; border-radius: 50%; border: 4px solid #007bff;">
+          </div>
+        </div>
+        <div class="col-lg-8 col-md-7">
+          <div class="ps-lg-4">
+            <div class="mb-4">
+              <h5 class="text-primary mb-3">Équipe Services Bladi</h5>
+              <p class="lead mb-3">
+                Directeur associé du cabinet ADVAL et Directeur Général des cabinets PGC Paris et AM Consulting – Paris, dispose de plus de 36 ans d'expérience locale et internationale dans les domaines du management, de la finance, du conseil au Maroc et en France.
+              </p>
+              <p class="mb-3">
+                Son parcours comprend notamment une expérience en tant qu'ex-Chargé de mission au Cabinet du Ministère de la Privatisation, ex-Directeur d'Audit et de contrôle interne à l'Agence Marchica, ainsi qu'ex-Directeur Général du Cabinet de Consulting Comptable, Financier et Fiscal (AM CONSULTING) France-Maroc pendant plusieurs années.
+              </p>
+              <p class="mb-3">
+                Cette vaste expertise lui a permis de développer une connaissance approfondie dans les domaines de la comptabilité, des finances, de la fiscalité, de l'audit, et des investissements, avec un suivi minutieux de projets clés en main.
+              </p>
+            </div>
+            
+            <div class="mb-4">
+              <h5 class="text-success mb-3">Spécialistes MRE</h5>
+              <p class="mb-3">
+                En tant que spécialistes des enjeux des Marocains Résidant à l'Étranger (MRE), nous comprenons parfaitement les défis uniques auxquels cette communauté fait face. Entre les questions de gestion de patrimoine, de fiscalité complexe entre le Maroc et la France, et la difficulté de trouver des solutions professionnelles adaptées à leur situation, les MRE sont souvent confrontés à des obstacles dans la gestion de leurs affaires financières.
+              </p>
+              <p class="mb-3">
+                Nous offrons des solutions sur mesure, alliant expertise locale et internationale, pour répondre à ces problématiques spécifiques de manière efficace et professionnelle.
+              </p>
+              <p class="mb-3">
+                Que ce soit pour la gestion de leurs investissements, le suivi fiscal transfrontalier, ou la sécurisation de leur patrimoine, notre équipe met à leur disposition des conseils et des services de qualité, pour qu'ils puissent gérer leurs affaires sereinement et en toute confiance.
+              </p>
+              <p class="mb-4">
+                Nous nous engageons à accompagner nos clients MRE avec des solutions personnalisées, innovantes et en toute transparence, afin de simplifier leurs démarches administratives et leur offrir un service haut de gamme adapté à leurs besoins.
+              </p>
+               <p class="mb-4">
+               le fait d'appartenariat aux Marocains du monde depuis 1982 ma permis d'avoir une connaissance et une expérience précise de fous les problèmes que vivent les M.R.E du monde .
+              </p>
+               <p class="mb-4">
+                fruit de ce partrimoine d'expriences, nous mettons à la dispositions de tous les MRE du monde , le fruit de capital afin dé mieux leur préparer le sejour voir le retour au pays ... 
+              </p>
+            </div>
+
+            <div class="text-center text-lg-start">
+              <h6 class="text-warning fw-bold fs-5 fst-italic">
+               <i class="bi bi-heart-fill me-2" style="color: red;"></i>
+                Bienvenue dans votre pays majestueux
+                <i class="bi bi-heart-fill me-2" style="color: red;"></i>
+              </h6>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  
+    </div>
+  </section>
+
+
+
+  <section class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-4 text-warning fw-bold section-title">Les liens préférés pour les MRE</h2>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-globe"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Maroc.ma (Portail National du Maroc)
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Portail officiel du Royaume du Maroc avec des informations administratives et des services publics pour les MRE.
+                        </p>
+                        <a href="https://maroc.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Visiter le site (Arabe et Français)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-building"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Ministère des Affaires Étrangères (DMRE)
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Source d'information cruciale sur les programmes et services destinés aux MRE.
+                        </p>
+                        <a href="https://www.marocainsdumonde.gov.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Visiter le site
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-hands-helping"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Fondation Hassan II (FH2MRE)
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Accompagnement essentiel des MRE, notamment pendant l'opération Marhaba.
+                        </p>
+                        <a href="https://www.fh2mre.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Visiter le site
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-balance-scale"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Ministère de la Justice
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Services en ligne pour les MRE concernant les affaires judiciaires.
+                        </p>
+                        <a href="https://justice.gov.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Guide de la Communauté Marocaine
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-university"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Attijariwafa Bank
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Propose le pack "Bila Houdoud" spécialement conçu pour les MRE.
+                        </p>
+                        <a href="https://www.attijariwafabank.com/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Section MRE
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-university"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Bank Of Africa (BMCE Group)
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Solutions d'investissement et services bancaires à distance pour les MRE.
+                        </p>
+                        <a href="https://www.bankofafrica.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Section Marocains du Monde
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-university"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Société Générale Maroc
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Services spéciaux MRE avec le pack "AHLAN".
+                        </p>
+                        <a href="https://www.societegenerale.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Section MRE
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-university"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            BMCI
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Filiale BNP Paribas avec le pack "Alizé" pour MRE.
+                        </p>
+                        <a href="https://www.bmci.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Section MRE
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-chart-line"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Centres Régionaux d'Investissement (CRI)
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Plateformes en ligne pour la création d'entreprise et le suivi de projets MRE.
+                        </p>
+                        <a href="https://fesmeknesinvest.ma/special-mre/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            CRI Fès-Meknès (Exemple)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-briefcase"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Hadjir
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Plateforme d'emploi dédiée aux MRE pour rechercher et déposer des CV.
+                        </p>
+                        <a href="https://hadjir.com/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Recherche d'Emploi
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-users"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            Yabiladi.com
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Portail communautaire non officiel avec actualités, forums et services pour la diaspora marocaine.
+                        </p>
+                        <a href="https://www.yabiladi.com/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Plateforme Communautaire
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0">
+                    <div class="card-header bg-dark text-warning border-0 py-3">
+                        <i class="fas fa-users"></i>
+                        <h5 class="card-title mb-0 fw-semibold">
+                            marjii.justice.gov.ma
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text text-dark mb-4 flex-grow-1">
+                            Plateforme officielle offrant l'accès à la jurisprudence marocaine, aux textes de loi et décisions judiciaires pour professionnels et citoyens, dans le cadre de la modernisation de la justice marocaine.
+                        <a href="https://marjii.justice.gov.ma/" class="btn btn-warning text-dark fw-semibold mt-auto" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Ministère de la Justice du Maroc
+                        </a>
+                    </div>
+                </div>
+            </div>
+        
+        
+          </div>
+    </section>
+
+
+{% endblock %}

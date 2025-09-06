@@ -1,0 +1,301 @@
+{% extends 'client/base.html' %}
+{% load document_filters %}
+{% load static %}
+
+{% block title %}Mes Documents - MRE{% endblock %}
+{% block meta_description %}Gestion des documents client MRE{% endblock %}
+{% block meta_keywords %}MRE, documents, services{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Mes Documents</h1>
+      <p class="text-gray-600">Gérez et organisez tous vos documents</p>
+    </div>
+    <button onclick="openUploadModal()" 
+            class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200 font-medium">
+      <i class="bi bi-upload mr-2"></i>
+      Télécharger un document
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <form method="get" action="{% url 'custom_requests:documents' %}">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Type de document</label>
+          <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+            <option value="">Tous les types</option>
+            <option value="identity" {% if request.GET.type == 'identity' %}selected{% endif %}>Identité</option>
+            <option value="proof" {% if request.GET.type == 'proof' %}selected{% endif %}>Justificatif</option>
+            <option value="contract" {% if request.GET.type == 'contract' %}selected{% endif %}>Contrat</option>
+            <option value="invoice" {% if request.GET.type == 'invoice' %}selected{% endif %}>Facture</option>
+            <option value="report" {% if request.GET.type == 'report' %}selected{% endif %}>Rapport</option>
+            <option value="other" {% if request.GET.type == 'other' %}selected{% endif %}>Autre</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+          <input type="date" name="date" value="{{ request.GET.date|default:'' }}" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Rechercher</label>
+          <input type="text" name="search" placeholder="Rechercher un document..." value="{{ request.GET.search|default:'' }}" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+        </div>
+        <div class="flex items-end">
+          <button type="submit" 
+                  class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium">
+            <i class="bi bi-funnel mr-2"></i>
+            Filtrer
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Documents List -->
+  <div id="documents-container" class="space-y-4">
+    {% if documents %}
+      {% for document in documents %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 document-item" 
+             data-type="{{ document.type }}"
+             data-date="{{ document.upload_date|date:'Y-m-d' }}">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-4 flex-1">
+              <!-- File Icon -->
+              <div class="flex-shrink-0">
+                {% if document.mime_type == 'application/pdf' %}
+                  <i class="bi bi-file-pdf text-red-500 text-2xl"></i>
+                {% elif 'image' in document.mime_type %}
+                  <i class="bi bi-file-image text-blue-500 text-2xl"></i>
+                {% elif 'word' in document.mime_type %}
+                  <i class="bi bi-file-word text-blue-600 text-2xl"></i>
+                {% elif 'excel' in document.mime_type or 'sheet' in document.mime_type %}
+                  <i class="bi bi-file-excel text-green-600 text-2xl"></i>
+                {% else %}
+                  <i class="bi bi-file-earmark text-gray-500 text-2xl"></i>
+                {% endif %}
+              </div>
+              
+              <!-- Document Info -->
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-2">
+                  <h3 class="text-lg font-semibold text-gray-900">{{ document.name }}</h3>
+                  {% if document.is_official %}
+                    <span class="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Officiel
+                    </span>
+                  {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-600">
+                  <div class="flex items-center">
+                    <i class="bi bi-calendar-event mr-2"></i>
+                    {{ document.upload_date|date:"d F Y - H:i" }}
+                  </div>
+                  <div class="flex items-center">
+                    <i class="bi bi-tag mr-2"></i>
+                    Type: {{ document|display_type }}
+                  </div>
+                  {% if document.file_size %}
+                    <div class="flex items-center">
+                      <i class="bi bi-hdd mr-2"></i>
+                      Taille: {{ document.file_size|filesizeformat }}
+                    </div>
+                  {% endif %}
+                  {% if document.service_request %}
+                    <div class="flex items-center md:col-span-2 lg:col-span-3">
+                      <i class="bi bi-link-45deg mr-2"></i>
+                      Demande: {{ document.service_request.title|truncatechars:40 }}
+                    </div>
+                  {% endif %}
+                  {% if document.reference_number %}
+                    <div class="flex items-center">
+                      <i class="bi bi-hash mr-2"></i>
+                      Ref: {{ document.reference_number }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center space-x-2 ml-4">
+              <a href="{{ document.file.url }}" target="_blank" 
+                 class="inline-flex items-center px-3 py-2 text-sm bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
+                 title="Voir le document">
+                <i class="bi bi-eye mr-1"></i>
+                Voir
+              </a>
+              <a href="{{ document.file.url }}" download 
+                 class="inline-flex items-center px-3 py-2 text-sm bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors"
+                 title="Télécharger">
+                <i class="bi bi-download mr-1"></i>
+                Télécharger
+              </a>
+              <button onclick="deleteDocument('{% url 'custom_requests:delete_document' document.id %}')" 
+                      class="inline-flex items-center px-3 py-2 text-sm bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors"
+                      title="Supprimer">
+                <i class="bi bi-trash mr-1"></i>
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <div class="max-w-md mx-auto">
+          <i class="bi bi-file-earmark-text text-6xl text-gray-400 mb-4"></i>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun document trouvé</h3>
+          <p class="text-gray-600 mb-4">Cliquez sur "Télécharger un document" pour ajouter votre premier document.</p>
+          <button onclick="openUploadModal()" 
+                  class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200 font-medium">
+            <i class="bi bi-upload mr-2"></i>
+            Télécharger un document
+          </button>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+  <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Télécharger un document</h3>
+        <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <form method="post" action="{% url 'custom_requests:upload_document' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nom du document</label>
+            <input type="text" name="name" required 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Type de document</label>
+            <select name="type" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+              <option value="identity">Identité</option>
+              <option value="proof">Justificatif</option>
+              <option value="contract">Contrat</option>
+              <option value="invoice">Facture</option>
+              <option value="report">Rapport</option>
+              <option value="other">Autre</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fichier</label>
+            <input type="file" name="file" required 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            <p class="text-xs text-gray-500 mt-1">Formats acceptés: PDF, DOC, DOCX, JPG, PNG (max. 10 MB)</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Associer à une demande (optionnel)</label>
+            <select name="demande_id" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+              <option value="">Aucune demande</option>
+              {% for demande in service_requests %}
+                <option value="{{ demande.id }}">{{ demande.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" id="isOfficialCheck" name="is_official" 
+                   class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2">
+            <label for="isOfficialCheck" class="ml-2 text-sm font-medium text-gray-700">Document officiel</label>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de référence (optionnel)</label>
+            <input type="text" name="reference_number" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button type="button" onclick="closeUploadModal()" 
+                  class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200">
+            Annuler
+          </button>
+          <button type="submit" 
+                  class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200">
+            Télécharger
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Supprimer le document</h3>
+        <button onclick="closeDeleteModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <p class="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer ce document ? Cette action ne peut pas être annulée.</p>
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeDeleteModal()" 
+                class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200">
+          Annuler
+        </button>
+        <a id="confirmDeleteBtn" href="#" 
+           class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200">
+          Supprimer
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Modal functions
+function openUploadModal() {
+  document.getElementById('uploadModal').classList.remove('hidden');
+}
+
+function closeUploadModal() {
+  document.getElementById('uploadModal').classList.add('hidden');
+}
+
+function deleteDocument(url) {
+  document.getElementById('confirmDeleteBtn').href = url;
+  document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.add('hidden');
+}
+
+// Close modals when clicking outside
+document.addEventListener('click', function(event) {
+  const modals = ['uploadModal', 'deleteModal'];
+  modals.forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (event.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
+});
+
+// Document filtering (if needed for client-side filtering)
+document.addEventListener('DOMContentLoaded', function() {
+  // Add any client-side filtering logic here if needed
+});
+</script>
+{% endblock %}

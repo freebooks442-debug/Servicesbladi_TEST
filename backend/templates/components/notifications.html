@@ -1,0 +1,603 @@
+<!-- Modern Notification Dropdown Component -->
+{% with suffix=notification_id_suffix|default:'' %}
+<div class="relative notification-container">
+    <!-- Notification Bell Button -->
+    <button 
+        id="notification-button{{ suffix|default:'' }}" 
+        type="button" 
+        class="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 rounded-full hover:bg-gray-100"
+        aria-expanded="false" 
+        aria-haspopup="true"
+    >
+        <span class="sr-only">View notifications</span>
+        <i class="bi bi-bell text-xl"></i>
+        
+        <!-- Notification Badge -->
+        <span id="notification-badge{{ suffix|default:'' }}" class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center hidden">
+            0
+        </span>
+    </button>
+
+    <!-- Notification Dropdown -->
+    <div 
+        id="notification-dropdown{{ suffix|default:'' }}" 
+        class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50 hidden transform opacity-0 scale-95 transition-all duration-200 ease-out"
+        role="menu" 
+        aria-orientation="vertical"
+    >
+        <!-- Header -->
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-semibold text-gray-900">Notifications</h3>
+                <div class="flex space-x-2">
+                    <button 
+                        id="mark-all-read-btn{{ suffix|default:'' }}" 
+                        class="text-xs text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                        title="Mark all as read"
+                    >
+                        Tout lire
+                    </button>
+                    <button 
+                        id="refresh-notifications-btn{{ suffix|default:'' }}" 
+                        class="text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                        title="Refresh notifications"
+                    >
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="notifications-list{{ suffix|default:'' }}" class="max-h-96 overflow-y-auto">
+            <!-- Loading State -->
+            <div id="notifications-loading{{ suffix|default:'' }}" class="flex items-center justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="notifications-empty{{ suffix|default:'' }}" class="hidden text-center py-8 px-4">
+                <i class="bi bi-bell-slash text-gray-400 text-5xl mx-auto"></i>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune notification</h3>
+                <p class="mt-1 text-sm text-gray-500">Tout est à jour!</p>
+            </div>
+
+            <!-- Notifications Content -->
+            <div id="notifications-content{{ suffix|default:'' }}" class="divide-y divide-gray-200">
+                <!-- Notifications will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-4 py-2 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+            <button 
+                id="view-all-notifications-btn{{ suffix|default:'' }}" 
+                class="w-full text-xs text-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+            >
+                Voir toutes les notifications
+            </button>
+        </div>
+    </div>
+</div>
+{% endwith %}
+
+<style>
+/* Custom animations for notification dropdown */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+}
+
+.notification-show {
+    display: block !important;
+    animation: slideIn 0.2s ease-out forwards;
+}
+
+.notification-hide {
+    animation: slideOut 0.2s ease-out forwards;
+}
+
+/* Pulse animation for notification badge */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.notification-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Custom scrollbar for notifications list */
+#notifications-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+#notifications-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#notifications-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+#notifications-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Notification item hover and click effects */
+.notification-item {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #f9fafb !important;
+    transform: translateX(2px);
+}
+
+.notification-item:active {
+    transform: translateX(1px);
+    background-color: #e5e7eb !important;
+}
+
+/* Loading state for redirect */
+.notification-item.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.notification-item.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #3b82f6;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevent multiple initialization
+    if (window.notificationSystemInitialized) {
+        return;
+    }
+    window.notificationSystemInitialized = true;
+    
+    // Find all notification containers and initialize them
+    const notificationContainers = document.querySelectorAll('.notification-container');
+    
+    notificationContainers.forEach(container => {
+        initializeNotificationContainer(container);
+    });
+    
+    function initializeNotificationContainer(container) {
+        const notificationButton = container.querySelector('[id^="notification-button"]');
+        const notificationDropdown = container.querySelector('[id^="notification-dropdown"]');
+        const notificationBadge = container.querySelector('[id^="notification-badge"]');
+        const notificationsList = container.querySelector('[id^="notifications-list"]');
+        const notificationsLoading = container.querySelector('[id^="notifications-loading"]');
+        const notificationsEmpty = container.querySelector('[id^="notifications-empty"]');
+        const notificationsContent = container.querySelector('[id^="notifications-content"]');
+        const markAllReadBtn = container.querySelector('[id^="mark-all-read-btn"]');
+        const refreshNotificationsBtn = container.querySelector('[id^="refresh-notifications-btn"]');
+        
+        // Check if elements exist before proceeding
+        if (!notificationButton || !notificationDropdown) {
+            console.warn('Notification elements not found in container');
+            return;
+        }
+        
+        let isDropdownOpen = false;
+        let notificationsData = [];
+        
+        // Get CSRF token helper
+        function getCSRFToken() {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (!csrfToken) {
+                // Try to get from cookies
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name === 'csrftoken') {
+                        return value;
+                    }
+                }
+            }
+            return csrfToken || '';
+        }
+        
+        // Toggle notification dropdown
+        function toggleNotificationDropdown() {
+            if (isDropdownOpen) {
+                closeNotificationDropdown();
+            } else {
+                openNotificationDropdown();
+            }
+        }
+        
+        function openNotificationDropdown() {
+            // Close other dropdowns first
+            notificationContainers.forEach(otherContainer => {
+                if (otherContainer !== container) {
+                    const otherDropdown = otherContainer.querySelector('[id^="notification-dropdown"]');
+                    const otherButton = otherContainer.querySelector('[id^="notification-button"]');
+                    if (otherDropdown && !otherDropdown.classList.contains('hidden')) {
+                        otherDropdown.classList.add('hidden');
+                        otherButton.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
+            
+            notificationDropdown.classList.remove('hidden');
+            notificationDropdown.classList.add('notification-show');
+            notificationButton.setAttribute('aria-expanded', 'true');
+            isDropdownOpen = true;
+            
+            // Load notifications when dropdown opens
+            loadNotifications();
+        }
+        
+        function closeNotificationDropdown() {
+            notificationDropdown.classList.add('notification-hide');
+            notificationButton.setAttribute('aria-expanded', 'false');
+            isDropdownOpen = false;
+            
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+                notificationDropdown.classList.remove('notification-show', 'notification-hide');
+            }, 200);
+        }
+        
+        // Load notifications from server
+        async function loadNotifications() {
+            try {
+                showLoadingState();
+                
+                const response = await fetch('/notifications/api/get/', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load notifications');
+                }
+                
+                const data = await response.json();
+                notificationsData = data.notifications || [];
+                
+                updateNotificationsBadge(data.unread_count || 0);
+                renderNotifications();
+                
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                showErrorState();
+            }
+        }
+        
+        function showLoadingState() {
+            if (notificationsLoading) notificationsLoading.classList.remove('hidden');
+            if (notificationsEmpty) notificationsEmpty.classList.add('hidden');
+            if (notificationsContent) notificationsContent.classList.add('hidden');
+        }
+        
+        function showErrorState() {
+            if (notificationsLoading) notificationsLoading.classList.add('hidden');
+            if (notificationsEmpty) notificationsEmpty.classList.remove('hidden');
+            if (notificationsContent) notificationsContent.classList.add('hidden');
+            
+            // Update empty state for error
+            if (notificationsEmpty) {
+                notificationsEmpty.innerHTML = `
+                    <i class="bi bi-exclamation-triangle text-red-400 text-5xl mx-auto"></i>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Erreur de chargement</h3>
+                    <p class="mt-1 text-sm text-gray-500">Impossible de charger les notifications</p>
+                `;
+            }
+        }
+        
+        function renderNotifications() {
+            if (notificationsLoading) notificationsLoading.classList.add('hidden');
+            
+            if (notificationsData.length === 0) {
+                if (notificationsEmpty) notificationsEmpty.classList.remove('hidden');
+                if (notificationsContent) notificationsContent.classList.add('hidden');
+                return;
+            }
+            
+            if (notificationsEmpty) notificationsEmpty.classList.add('hidden');
+            if (notificationsContent) notificationsContent.classList.remove('hidden');
+            
+            let html = '';
+            notificationsData.forEach(notification => {
+                html += createNotificationHTML(notification);
+            });
+            
+            if (notificationsContent) notificationsContent.innerHTML = html;
+        }
+        
+        function createNotificationHTML(notification) {
+            const isUnread = !notification.is_read;
+            const timeAgo = formatTimeAgo(notification.created_at);
+            const typeIcon = getNotificationIcon(notification.type);
+            
+            return `
+                <div class="notification-item px-4 py-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${isUnread ? 'bg-blue-50' : ''}" 
+                     data-notification-id="${notification.id}"
+                     data-redirect-url="${notification.redirect_url || ''}">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="bi ${typeIcon} text-blue-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-medium text-gray-900 truncate">${notification.title}</h4>
+                                ${isUnread ? '<span class="w-2 h-2 bg-blue-500 rounded-full ml-2"></span>' : ''}
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1 line-clamp-2">${notification.content}</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-xs text-gray-500">${timeAgo}</span>
+                                <div class="flex space-x-2">
+                                    ${isUnread ? '<button class="text-xs text-blue-600 hover:text-blue-800 mark-read-btn" onclick="event.stopPropagation()">Marquer comme lu</button>' : ''}
+                                    <button class="text-xs text-green-600 hover:text-green-800 view-btn" onclick="event.stopPropagation()">Voir</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getNotificationIcon(type) {
+            const icons = {
+                'appointment_update': 'bi-calendar-event',
+                'request_update': 'bi-file-earmark-text',
+                'message': 'bi-chat-dots',
+                'document': 'bi-file-earmark',
+                'system': 'bi-gear'
+            };
+            return icons[type] || 'bi-bell';
+        }
+        
+        function formatTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'À l\'instant';
+            if (diffInSeconds < 3600) return `Il y a ${Math.floor(diffInSeconds / 60)} min`;
+            if (diffInSeconds < 86400) return `Il y a ${Math.floor(diffInSeconds / 3600)} h`;
+            if (diffInSeconds < 2592000) return `Il y a ${Math.floor(diffInSeconds / 86400)} j`;
+            
+            return date.toLocaleDateString('fr-FR');
+        }
+        
+        function updateNotificationsBadge(count) {
+            if (notificationBadge) {
+                if (count > 0) {
+                    notificationBadge.textContent = count > 99 ? '99+' : count;
+                    notificationBadge.classList.remove('hidden');
+                    notificationBadge.classList.add('notification-pulse');
+                } else {
+                    notificationBadge.classList.add('hidden');
+                    notificationBadge.classList.remove('notification-pulse');
+                }
+            }
+        }
+        
+        async function handleNotificationClick(notificationId, redirectUrl) {
+            try {
+                // Add loading state
+                const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (notificationItem) {
+                    notificationItem.classList.add('loading');
+                }
+                
+                const response = await fetch(`/notifications/api/click/${notificationId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken(),
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && (redirectUrl || data.redirect_url)) {
+                        // Close the dropdown first
+                        closeNotificationDropdown();
+                        
+                        // Add a small delay for user feedback
+                        setTimeout(() => {
+                            // Redirect to the appropriate page
+                            window.location.href = redirectUrl || data.redirect_url;
+                        }, 300);
+                    } else {
+                        console.error('No redirect URL provided');
+                        // Remove loading state
+                        if (notificationItem) {
+                            notificationItem.classList.remove('loading');
+                        }
+                    }
+                } else {
+                    console.error('Failed to handle notification click');
+                    // Remove loading state
+                    if (notificationItem) {
+                        notificationItem.classList.remove('loading');
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling notification click:', error);
+                // Remove loading state
+                const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (notificationItem) {
+                    notificationItem.classList.remove('loading');
+                }
+            }
+        }
+        
+        async function markNotificationAsRead(notificationId) {
+            try {
+                const response = await fetch(`/notifications/api/mark-read/${notificationId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken(),
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    loadNotifications();
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+        
+        // Event listeners
+        notificationButton.addEventListener('click', toggleNotificationDropdown);
+        
+        // Mark all as read
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', async function() {
+                try {
+                    const response = await fetch('/notifications/api/mark-all-read/', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCSRFToken(),
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        loadNotifications();
+                    }
+                } catch (error) {
+                    console.error('Error marking all notifications as read:', error);
+                }
+            });
+        }
+        
+        // Refresh notifications
+        if (refreshNotificationsBtn) {
+            refreshNotificationsBtn.addEventListener('click', function() {
+                loadNotifications();
+            });
+        }
+        
+        // View all notifications
+        const viewAllNotificationsBtn = container.querySelector('[id^="view-all-notifications-btn"]');
+        if (viewAllNotificationsBtn) {
+            viewAllNotificationsBtn.addEventListener('click', function() {
+                // Close dropdown and redirect to a notifications page
+                closeNotificationDropdown();
+                
+                // Check if user is expert or client and redirect accordingly
+                const isExpert = document.body.classList.contains('expert-dashboard') || 
+                                window.location.pathname.includes('/expert/');
+                
+                if (isExpert) {
+                    window.location.href = '/expert/notifications/';
+                } else {
+                    window.location.href = '/client/notifications/';
+                }
+            });
+        }
+        
+        // Handle individual notification actions
+        container.addEventListener('click', function(event) {
+            const notificationItem = event.target.closest('.notification-item');
+            if (!notificationItem) return;
+            
+            const notificationId = notificationItem.dataset.notificationId;
+            const redirectUrl = notificationItem.dataset.redirectUrl;
+            
+            if (event.target.classList.contains('mark-read-btn')) {
+                // Mark as read button clicked
+                markNotificationAsRead(notificationId);
+            } else if (event.target.classList.contains('view-btn')) {
+                // View button clicked
+                handleNotificationClick(notificationId, redirectUrl);
+            } else if (event.target.closest('.notification-item') && !event.target.closest('button')) {
+                // Clicking on the notification itself (not on a button)
+                handleNotificationClick(notificationId, redirectUrl);
+            }
+        });
+        
+        // Load notifications count on initialization
+        loadNotifications();
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        notificationContainers.forEach(container => {
+            const notificationButton = container.querySelector('[id^="notification-button"]');
+            const notificationDropdown = container.querySelector('[id^="notification-dropdown"]');
+            
+            if (notificationButton && notificationDropdown && 
+                !notificationButton.contains(event.target) && 
+                !notificationDropdown.contains(event.target)) {
+                if (!notificationDropdown.classList.contains('hidden')) {
+                    notificationDropdown.classList.add('hidden');
+                    notificationButton.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+    });
+    
+    // Auto-refresh notifications every 30 seconds
+    setInterval(() => {
+        // Refresh notifications for all containers
+        document.querySelectorAll('.notification-container').forEach(container => {
+            const notificationButton = container.querySelector('[id^="notification-button"]');
+            if (notificationButton && notificationButton.click) {
+                // Trigger load for each container by calling the internal loadNotifications
+                const loadEvent = new CustomEvent('refreshNotifications');
+                container.dispatchEvent(loadEvent);
+            }
+        });
+    }, 30000);
+});
+</script>

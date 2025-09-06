@@ -1,0 +1,331 @@
+{% extends 'client/base.html' %}
+{% load service_filters %}
+
+{% block title %}Mes Demandes - MRE{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Mes Demandes de Services</h1>
+      <p class="text-gray-600">Suivez l'état de vos demandes de services MRE</p>
+    </div>
+    <div class="mt-4 sm:mt-0 relative">
+      <button id="newRequestBtn" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+        <i class="bi bi-plus-circle"></i>
+        Nouvelle demande
+        <i class="bi bi-chevron-down ml-1"></i>
+      </button>
+      
+      <!-- Dropdown Menu -->
+      <div id="newRequestDropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10 hidden">
+        {% for service in available_services %}
+          {% if service|should_display_service %}
+            <a href="#" onclick="openNewRequestModal('{{ service.title }}')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors first:rounded-t-lg last:rounded-b-lg">
+              {{ service.title|translate_service_name }}
+            </a>
+          {% endif %}
+        {% empty %}
+          <a href="#" onclick="openNewRequestModal('Administratif')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors rounded-t-lg">Administratif</a>
+          <a href="#" onclick="openNewRequestModal('Tourisme')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Tourisme</a>
+          <a href="#" onclick="openNewRequestModal('Immobilier')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Immobilier</a>
+          <a href="#" onclick="openNewRequestModal('Fiscal')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Fiscal</a>
+          <a href="#" onclick="openNewRequestModal('Investissement')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors rounded-b-lg">Investissement</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <form method="get" action="">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+          <select name="status" id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+            <option value="">Tous les statuts</option>
+            <option value="new" {% if current_status == 'new' %}selected{% endif %}>Nouvelle</option>
+            <option value="pending_info" {% if current_status == 'pending_info' %}selected{% endif %}>En attente d'information</option>
+            <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>En cours</option>
+            <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Terminée</option>
+            <option value="cancelled" {% if current_status == 'cancelled' %}selected{% endif %}>Annulée</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+          <select name="priority" id="priority-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+            <option value="">Toutes les priorités</option>
+            <option value="low" {% if current_priority == 'low' %}selected{% endif %}>Basse</option>
+            <option value="medium" {% if current_priority == 'medium' %}selected{% endif %}>Moyenne</option>
+            <option value="high" {% if current_priority == 'high' %}selected{% endif %}>Haute</option>
+            <option value="urgent" {% if current_priority == 'urgent' %}selected{% endif %}>Urgente</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Service</label>
+          <select name="service" id="service-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+            <option value="">Tous les services</option>
+            <option value="Administratif" {% if current_service == 'Administratif' %}selected{% endif %}>Administratif</option>
+            <option value="Tourisme" {% if current_service == 'Tourisme' %}selected{% endif %}>Tourisme</option>
+            <option value="Immobilier" {% if current_service == 'Immobilier' %}selected{% endif %}>Immobilier</option>
+            <option value="Fiscal" {% if current_service == 'Fiscal' %}selected{% endif %}>Fiscal</option>
+            <option value="Investissement" {% if current_service == 'Investissement' %}selected{% endif %}>Investissement</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200">
+            Filtrer
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Requests List -->
+  <div class="space-y-6">
+    {% if requests %}
+      {% for request in requests %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+          <div class="p-6">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                      {{ request.title }}
+                    </h3>
+                    <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
+                      <div class="flex items-center">
+                        <i class="bi bi-calendar mr-2"></i>
+                        {{ request.created_at|date:"d/m/Y H:i" }}
+                      </div>
+                      <div class="flex items-center">
+                        <i class="bi bi-hash mr-2"></i>
+                        REQ-{{ request.id }}
+                      </div>
+                      {% if request.assigned_expert %}
+                        <div class="flex items-center">
+                          <i class="bi bi-person mr-2"></i>
+                          {{ request.assigned_expert.user.name }} {{ request.assigned_expert.user.first_name }}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  
+                  <!-- Status and Priority Badges -->
+                  <div class="flex flex-col gap-2">
+                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium
+                      {% if request.status == 'completed' %}bg-green-100 text-green-800
+                      {% elif request.status == 'in_progress' %}bg-blue-100 text-blue-800
+                      {% elif request.status == 'pending_info' %}bg-yellow-100 text-yellow-800
+                      {% elif request.status == 'cancelled' %}bg-red-100 text-red-800
+                      {% else %}bg-gray-100 text-gray-800{% endif %}">
+                      {{ request.get_status_display }}
+                    </span>
+                    
+                    {% if request.priority %}
+                      <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium
+                        {% if request.priority == 'urgent' %}bg-red-100 text-red-800
+                        {% elif request.priority == 'high' %}bg-orange-100 text-orange-800
+                        {% elif request.priority == 'medium' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ request.get_priority_display }}
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+                
+                {% if request.description %}
+                  <div class="mb-4">
+                    <p class="text-sm text-gray-600 line-clamp-2">{{ request.description|truncatewords:30 }}</p>
+                  </div>
+                {% endif %}
+                
+                <!-- Progress Bar -->
+                <div class="mb-4">
+                  <div class="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Progression</span>
+                    <span>
+                      {% if request.status == 'completed' %}100%
+                      {% elif request.status == 'in_progress' %}60%
+                      {% elif request.status == 'pending_info' %}40%
+                      {% else %}20%{% endif %}
+                    </span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="h-2 rounded-full 
+                      {% if request.status == 'completed' %}bg-green-500 w-full
+                      {% elif request.status == 'in_progress' %}bg-blue-500 w-3/5
+                      {% elif request.status == 'pending_info' %}bg-yellow-500 w-2/5
+                      {% else %}bg-gray-400 w-1/5{% endif %}">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Actions -->
+              <div class="mt-4 lg:mt-0 lg:ml-6 flex flex-col sm:flex-row gap-2">
+                <a href="/requests/client/detail/{{ request.id }}/" 
+                   class="inline-flex items-center justify-center px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                  <i class="bi bi-eye mr-2"></i>
+                  Voir détails
+                </a>
+                
+                {% if request.status != 'completed' and request.status != 'cancelled' %}
+                  <a href="/requests/client/edit/{{ request.id }}/" 
+                     class="inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-all duration-200 text-sm font-medium">
+                    <i class="bi bi-pencil mr-2"></i>
+                    Modifier
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+        <div class="flex justify-center mt-8">
+          <nav class="flex items-center space-x-2">
+            {% if page_obj.has_previous %}
+              <a href="?page=1" class="px-3 py-2 text-gray-500 hover:text-primary transition-colors">
+                <i class="bi bi-chevron-double-left"></i>
+              </a>
+              <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 text-gray-500 hover:text-primary transition-colors">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            {% endif %}
+            
+            <span class="px-3 py-2 text-sm text-gray-700">
+              Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 text-gray-500 hover:text-primary transition-colors">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+              <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 text-gray-500 hover:text-primary transition-colors">
+                <i class="bi bi-chevron-double-right"></i>
+              </a>
+            {% endif %}
+          </nav>
+        </div>
+      {% endif %}
+    {% else %}
+      <!-- Empty State -->
+      <div class="text-center py-12">
+        <div class="w-16 h-16 mx-auto mb-4 text-gray-400">
+          <i class="bi bi-file-earmark-text text-4xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune demande</h3>
+        <p class="text-gray-600 mb-6">Vous n'avez pas encore soumis de demandes de services.</p>
+        <button onclick="document.getElementById('newRequestBtn').click()" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+          <i class="bi bi-plus-circle"></i>
+          Créer ma première demande
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- New Request Modal -->
+<div id="newRequestModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-gray-900">Nouvelle Demande de Service</h3>
+          <button onclick="closeNewRequestModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        
+        <form method="post" action="{% url 'custom_requests:create_request' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Type de service</label>
+              <select name="service_type" id="serviceType" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                <option value="">Sélectionner un service</option>
+                <option value="Administratif">Administratif</option>
+                <option value="Tourisme">Tourisme</option>
+                <option value="Immobilier">Immobilier</option>
+                <option value="Fiscal">Fiscal</option>
+                <option value="Investissement">Investissement</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Titre de la demande</label>
+              <input type="text" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Titre de votre demande">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Description détaillée</label>
+              <textarea name="description" rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Décrivez votre demande en détail..."></textarea>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+              <select name="priority" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                <option value="low">Basse</option>
+                <option value="medium" selected>Moyenne</option>
+                <option value="high">Haute</option>
+                <option value="urgent">Urgente</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Documents joints (optionnel)</label>
+              <input type="file" name="documents" multiple class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              <p class="text-xs text-gray-500 mt-1">Formats acceptés: PDF, DOC, DOCX, JPG, PNG</p>
+            </div>
+          </div>
+          
+          <div class="flex justify-end gap-3 mt-6">
+            <button type="button" onclick="closeNewRequestModal()" class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200">
+              Annuler
+            </button>
+            <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200">
+              Soumettre la demande
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Dropdown toggle
+document.getElementById('newRequestBtn').addEventListener('click', function() {
+  const dropdown = document.getElementById('newRequestDropdown');
+  dropdown.classList.toggle('hidden');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const btn = document.getElementById('newRequestBtn');
+  const dropdown = document.getElementById('newRequestDropdown');
+  
+  if (!btn.contains(event.target) && !dropdown.contains(event.target)) {
+    dropdown.classList.add('hidden');
+  }
+});
+
+function openNewRequestModal(serviceType = '') {
+  document.getElementById('newRequestModal').classList.remove('hidden');
+  document.getElementById('newRequestDropdown').classList.add('hidden');
+  
+  if (serviceType) {
+    document.getElementById('serviceType').value = serviceType;
+  }
+}
+
+function closeNewRequestModal() {
+  document.getElementById('newRequestModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

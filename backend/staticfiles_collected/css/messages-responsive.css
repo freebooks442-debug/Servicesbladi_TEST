@@ -1,0 +1,240 @@
+/* 
+ * ServicesBladi - Messages Responsive CSS
+ * Specific responsive behavior for messaging interface
+ * Mobile-first approach for better UX
+ */
+
+/* Mobile-specific styles */
+@media (max-width: 992px) {
+    /* Container for mobile navigation */
+    .chat-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Contacts list - default view on mobile */
+    .contacts-list {
+        width: 100% !important;
+        position: absolute;
+        height: 100%;
+        z-index: 10;
+        background: white;
+        transform: translateX(0);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Chat main area - hidden by default on mobile */
+    .chat-main {
+        width: 100% !important;
+        position: absolute;
+        height: 100%;
+        z-index: 5;
+        background: white;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Active state - when contact is selected */
+    .chat-container.chat-active .contacts-list {
+        transform: translateX(-100%);
+    }
+    
+    .chat-container.chat-active .chat-main {
+        transform: translateX(0);
+    }
+    
+    /* Back button - only visible on mobile */
+    .chat-header #showContacts {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: none;
+        background: transparent;
+        color: #6c757d;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .chat-header #showContacts:hover,
+    .chat-header #showContacts:focus {
+        color: #495057;
+        background: rgba(0,0,0,0.08);
+        outline: none;
+    }
+    
+    /* Improved touch targets */
+    .contact-item {
+        padding: 1rem !important;
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .contact-avatar {
+        width: 48px !important;
+        height: 48px !important;
+        margin-right: 1rem !important;
+    }
+    
+    /* Better spacing for mobile */
+    .chat-header {
+        padding: 1rem !important;
+        min-height: 80px;
+    }
+    
+    .chat-avatar {
+        width: 48px !important;
+        height: 48px !important;
+    }
+    
+    /* Search input improvements */
+    .contacts-header {
+        padding: 1rem !important;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .contacts-header .form-control {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Message input improvements */
+    .chat-input {
+        padding: 1rem !important;
+        background: white;
+        border-top: 2px solid #f8f9fa;
+    }
+    
+    .chat-input input {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 0.75rem 1rem !important;
+        border-radius: 25px !important;
+    }
+    
+    .chat-input button {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 50% !important;
+        margin-left: 0.5rem;
+    }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1200px) and (min-width: 993px) {
+    .contacts-list {
+        width: 320px !important;
+    }
+}
+
+/* Small mobile phones */
+@media (max-width: 480px) {
+    .contact-item {
+        padding: 0.75rem !important;
+    }
+    
+    .contact-name {
+        font-size: 0.95rem;
+    }
+    
+    .contact-preview {
+        font-size: 0.8rem;
+    }
+    
+    .chat-header {
+        padding: 0.75rem !important;
+        min-height: 70px;
+    }
+    
+    .chat-contact-name {
+        font-size: 1rem;
+    }
+    
+    .chat-contact-status {
+        font-size: 0.8rem;
+    }
+}
+
+/* Large screens - ensure desktop behavior */
+@media (min-width: 1201px) {
+    .chat-container {
+        display: flex !important;
+    }
+    
+    .contacts-list {
+        position: static !important;
+        transform: none !important;
+        width: 350px;
+    }
+    
+    .chat-main {
+        position: static !important;
+        transform: none !important;
+        flex: 1;
+    }
+    
+    #showContacts {
+        display: none !important;
+    }
+}
+
+/* Animation helpers */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Loading state */
+.contact-item.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.contact-item.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .contacts-list,
+    .chat-main {
+        transition: none !important;
+    }
+    
+    .contact-item.loading::after {
+        animation: none !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .contact-item:hover,
+    .contact-item.active {
+        background: #000 !important;
+        color: #fff !important;
+    }
+    
+    .chat-header #showContacts {
+        border: 1px solid currentColor !important;
+    }
+}

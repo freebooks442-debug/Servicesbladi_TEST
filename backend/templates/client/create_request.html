@@ -1,0 +1,266 @@
+{% extends 'client/base.html' %}
+
+{% block title %}Nouvelle Demande - MRE{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Nouvelle Demande de Service</h1>
+      <p class="text-gray-600">Créez une nouvelle demande pour nos services MRE</p>
+    </div>
+    <a href="{% url 'client_demandes' %}" class="mt-4 sm:mt-0 border border-primary text-primary hover:bg-primary hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+      <i class="bi bi-arrow-left"></i>
+      Retour aux demandes
+    </a>
+  </div>
+
+  <!-- Service Info Card -->
+  {% if service %}
+    <div class="bg-gradient-to-r from-primary to-secondary rounded-lg p-6 text-white mb-6">
+      <div class="flex items-center">
+        <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mr-4">
+          <i class="bi bi-gear text-xl"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold mb-1">{{ service.title }}</h2>
+          <p class="text-white/90">{% if service.service_type %}{{ service.service_type.category.name }}{% endif %}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Request Form -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+      
+      <!-- Service Type Selection -->
+      <div>
+        <label for="service_type" class="block text-sm font-medium text-gray-700 mb-2">
+          Type de service <span class="text-red-500">*</span>
+        </label>
+        <select id="service_type" name="service_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+          <option value="">Sélectionner un type de service</option>
+          <option value="Administratif" {% if request.GET.service == 'Administratif' %}selected{% endif %}>Administratif</option>
+          <option value="Tourisme" {% if request.GET.service == 'Tourisme' %}selected{% endif %}>Tourisme</option>
+          <option value="Immobilier" {% if request.GET.service == 'Immobilier' %}selected{% endif %}>Immobilier</option>
+          <option value="Fiscal" {% if request.GET.service == 'Fiscal' %}selected{% endif %}>Fiscal</option>
+          <option value="Investissement" {% if request.GET.service == 'Investissement' %}selected{% endif %}>Investissement</option>
+        </select>
+        <p class="text-sm text-gray-500 mt-1">Choisissez le type de service correspondant à votre demande</p>
+      </div>
+
+      <!-- Title -->
+      <div>
+        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+          Titre de la demande <span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="title" 
+          name="title" 
+          required 
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          placeholder="Ex: Renouvellement de passport, Déclaration fiscale..."
+        >
+        <p class="text-sm text-gray-500 mt-1">Un titre court et descriptif pour votre demande</p>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+          Description détaillée <span class="text-red-500">*</span>
+        </label>
+        <textarea 
+          id="description" 
+          name="description" 
+          rows="5" 
+          required 
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          placeholder="Décrivez en détail votre besoin, les documents dont vous disposez, les délais souhaités..."
+        ></textarea>
+        <p class="text-sm text-gray-500 mt-1">Plus votre description est détaillée, plus nous pourrons vous aider efficacement</p>
+      </div>
+
+      <!-- Priority -->
+      <div>
+        <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+        <select id="priority" name="priority" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+          <option value="low">Basse - Pas d'urgence particulière</option>
+          <option value="medium" selected>Moyenne - Dans les prochaines semaines</option>
+          <option value="high">Haute - Dans les prochains jours</option>
+          <option value="urgent">Urgente - Le plus rapidement possible</option>
+        </select>
+        <p class="text-sm text-gray-500 mt-1">Indiquez le niveau d'urgence de votre demande</p>
+      </div>
+
+      <!-- Contact Preferences -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">Préférences de contact</label>
+        <div class="space-y-3">
+          <div class="flex items-center">
+            <input id="contact_email" name="contact_method" type="radio" value="email" checked class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <label for="contact_email" class="ml-2 text-sm text-gray-700">Email</label>
+          </div>
+          <div class="flex items-center">
+            <input id="contact_phone" name="contact_method" type="radio" value="phone" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <label for="contact_phone" class="ml-2 text-sm text-gray-700">Téléphone</label>
+          </div>
+          <div class="flex items-center">
+            <input id="contact_video" name="contact_method" type="radio" value="video" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+            <label for="contact_video" class="ml-2 text-sm text-gray-700">Visioconférence</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Upload -->
+      <div>
+        <label for="documents" class="block text-sm font-medium text-gray-700 mb-2">Documents joints (optionnel)</label>
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+          <input 
+            type="file" 
+            id="documents" 
+            name="documents" 
+            multiple 
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            class="hidden"
+            onchange="updateFileList(this)"
+          >
+          <label for="documents" class="cursor-pointer">
+            <i class="bi bi-cloud-upload text-3xl text-gray-400 mb-3 block"></i>
+            <span class="text-gray-600">Cliquez pour sélectionner des fichiers</span>
+            <p class="text-sm text-gray-500 mt-1">ou glissez-déposez vos documents ici</p>
+          </label>
+        </div>
+        <div id="fileList" class="mt-3 space-y-2"></div>
+        <p class="text-sm text-gray-500 mt-2">Formats acceptés: PDF, DOC, DOCX, JPG, PNG (max 10MB par fichier)</p>
+      </div>
+
+      <!-- Expected Timeline -->
+      <div>
+        <label for="expected_completion" class="block text-sm font-medium text-gray-700 mb-2">Date souhaitée de finalisation</label>
+        <input 
+          type="date" 
+          id="expected_completion" 
+          name="expected_completion"
+          min="{{ today|date:'Y-m-d' }}"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+        >
+        <p class="text-sm text-gray-500 mt-1">Date à laquelle vous souhaitez que votre demande soit finalisée</p>
+      </div>
+
+      <!-- Additional Information -->
+      <div>
+        <label for="additional_info" class="block text-sm font-medium text-gray-700 mb-2">Informations complémentaires</label>
+        <textarea 
+          id="additional_info" 
+          name="additional_info" 
+          rows="3" 
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          placeholder="Toute information supplémentaire qui pourrait nous aider..."
+        ></textarea>
+      </div>
+
+      <!-- Terms and Conditions -->
+      <div class="flex items-start">
+        <input 
+          id="accept_terms" 
+          name="accept_terms" 
+          type="checkbox" 
+          required
+          class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded mt-1"
+        >
+        <label for="accept_terms" class="ml-2 text-sm text-gray-700">
+          J'accepte les <a href="#" class="text-primary hover:text-primary/80 underline">conditions d'utilisation</a> 
+          et la <a href="#" class="text-primary hover:text-primary/80 underline">politique de confidentialité</a>
+          <span class="text-red-500">*</span>
+        </label>
+      </div>
+
+      <!-- Submit Buttons -->
+      <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-gray-200">
+        <a href="{% url 'client_demandes' %}" class="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 text-center">
+          Annuler
+        </a>
+        <button type="submit" class="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200 inline-flex items-center justify-center gap-2">
+          <i class="bi bi-check-circle"></i>
+          Soumettre la demande
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Help Section -->
+  <div class="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200">
+    <div class="flex items-start">
+      <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white mr-4">
+        <i class="bi bi-info-circle"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Besoin d'aide ?</h3>
+        <p class="text-gray-600 mb-4">Si vous avez des questions sur la création de votre demande, n'hésitez pas à nous contacter.</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="{% url 'client_messages' %}" class="text-primary hover:text-primary/80 text-sm font-medium">
+            <i class="bi bi-chat-dots mr-1"></i>
+            Contacter un expert
+          </a>
+          <a href="{% url 'client_rendezvous' %}" class="text-primary hover:text-primary/80 text-sm font-medium">
+            <i class="bi bi-calendar-plus mr-1"></i>
+            Prendre rendez-vous
+          </a>
+          <a href="{% url 'client_ressources' %}" class="text-primary hover:text-primary/80 text-sm font-medium">
+            <i class="bi bi-book mr-1"></i>
+            Consulter les guides
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function updateFileList(input) {
+  const fileList = document.getElementById('fileList');
+  fileList.innerHTML = '';
+  
+  if (input.files.length > 0) {
+    Array.from(input.files).forEach((file, index) => {
+      const fileItem = document.createElement('div');
+      fileItem.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3';
+      fileItem.innerHTML = `
+        <div class="flex items-center">
+          <i class="bi bi-file-earmark text-gray-500 mr-2"></i>
+          <span class="text-sm text-gray-700">${file.name}</span>
+          <span class="text-xs text-gray-500 ml-2">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+        </div>
+        <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">
+          <i class="bi bi-x-circle"></i>
+        </button>
+      `;
+      fileList.appendChild(fileItem);
+    });
+  }
+}
+
+function removeFile(index) {
+  const input = document.getElementById('documents');
+  const files = Array.from(input.files);
+  files.splice(index, 1);
+  
+  // Create new FileList
+  const dt = new DataTransfer();
+  files.forEach(file => dt.items.add(file));
+  input.files = dt.files;
+  
+  updateFileList(input);
+}
+
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('expected_completion').min = today;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Nouveau Message - ServicesBladi{% endblock %}
+
+{% block content %}
+<!-- Message Icon -->
+<div class="icon-container primary">
+    <span class="icon">💬</span>
+</div>
+
+<!-- Main Message -->
+<h1 class="title">Nouveau message</h1>
+<p class="subtitle">{{ sender_name }} vous a envoyé un message</p>
+
+<!-- Message Content -->
+<div class="info-box">
+    <div class="info-title">Message :</div>
+    <div class="info-text" style="font-style: italic;">
+        "{{ message_content }}"
+    </div>
+</div>
+
+{% if request_title %}
+<!-- Request Details -->
+<div class="info-box primary">
+    <div class="info-title">📋 Concernant :</div>
+    <div class="info-text">
+        {{ request_title }}
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Button -->
+<a href="{{ site_url }}/accounts/dashboard/" class="button">
+    Répondre au message
+</a>
+{% endblock %}
+</div>
+
+<div class="content" style="margin-top: 30px; font-size: 14px; color: #666;">
+    <strong>💡 Conseil:</strong> Répondez rapidement pour assurer une communication efficace avec votre interlocuteur.
+</div>
+{% endblock %}

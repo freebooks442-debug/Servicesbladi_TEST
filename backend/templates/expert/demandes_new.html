@@ -1,0 +1,347 @@
+{% extends 'expert/base.html' %}
+{% load static %}
+
+{% block title %}Demandes - MRE{% endblock %}
+{% block page_title %}Demandes Clients{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Filter and Search Header -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+      <div class="flex items-center space-x-4">
+        <h2 class="text-xl font-semibold text-gray-900">Demandes Clients</h2>
+        <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+          {{ requests.count|default:0 }} demande{{ requests.count|pluralize }}
+        </span>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+        <!-- Status Filter -->
+        <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="">Tous les statuts</option>
+          <option value="pending">En attente</option>
+          <option value="in_progress">En cours</option>
+          <option value="completed">Terminée</option>
+          <option value="cancelled">Annulée</option>
+        </select>
+        
+        <!-- Service Type Filter -->
+        <select id="serviceFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="">Tous les services</option>
+          <option value="administratif">Administratif</option>
+          <option value="tourisme">Tourisme</option>
+          <option value="immobilier">Immobilier</option>
+          <option value="fiscal">Fiscal</option>
+          <option value="investissement">Investissement</option>
+        </select>
+        
+        <!-- Search -->
+        <div class="relative">
+          <input type="text" id="searchInput" placeholder="Rechercher..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requests Grid -->
+  <div id="requestsContainer">
+    {% if requests %}
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {% for request in requests %}
+          <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 request-card" data-status="{{ request.status }}" data-service="{{ request.service_type }}" data-client="{{ request.client.user.name }} {{ request.client.user.first_name }}">
+            <div class="p-6">
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                  {% if request.client.user.profile_picture %}
+                    <img class="h-12 w-12 rounded-full object-cover" src="{{ request.client.user.get_profile_picture_url }}" alt="Client">
+                  {% else %}
+                    <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                      <i class="bi bi-person-fill text-gray-500 text-lg"></i>
+                    </div>
+                  {% endif %}
+                  <div>
+                    <h3 class="text-lg font-medium text-gray-900">{{ request.client.user.name }} {{ request.client.user.first_name }}</h3>
+                    <p class="text-sm text-gray-500">{{ request.client.user.email }}</p>
+                  </div>
+                </div>
+                
+                <span class="px-3 py-1 text-xs font-medium rounded-full
+                  {% if request.status == 'pending' %}bg-yellow-100 text-yellow-800
+                  {% elif request.status == 'in_progress' %}bg-blue-100 text-blue-800
+                  {% elif request.status == 'completed' %}bg-green-100 text-green-800
+                  {% elif request.status == 'cancelled' %}bg-red-100 text-red-800
+                  {% else %}bg-gray-100 text-gray-800{% endif %}">
+                  {% if request.status == 'pending' %}En attente
+                  {% elif request.status == 'in_progress' %}En cours
+                  {% elif request.status == 'completed' %}Terminée
+                  {% elif request.status == 'cancelled' %}Annulée
+                  {% else %}{{ request.status|title }}{% endif %}
+                </span>
+              </div>
+
+              <!-- Request Details -->
+              <div class="space-y-3 mb-4">
+                <div class="flex items-center space-x-2">
+                  <i class="bi bi-tag text-primary"></i>
+                  <span class="text-sm font-medium text-gray-700">{{ request.service_type|title }}</span>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                  <i class="bi bi-calendar text-primary"></i>
+                  <span class="text-sm text-gray-600">Créée le {{ request.created_at|date:"d M Y à H:i" }}</span>
+                </div>
+                
+                {% if request.priority %}
+                <div class="flex items-center space-x-2">
+                  <i class="bi bi-exclamation-triangle text-orange-500"></i>
+                  <span class="text-sm text-orange-600 font-medium">Priorité {{ request.priority|title }}</span>
+                </div>
+                {% endif %}
+              </div>
+
+              <!-- Description Preview -->
+              {% if request.description %}
+              <div class="mb-4">
+                <p class="text-sm text-gray-600 line-clamp-2">
+                  {{ request.description|truncatewords:20 }}
+                </p>
+              </div>
+              {% endif %}
+
+              <!-- Documents Count -->
+              {% if request.documents.count > 0 %}
+              <div class="mb-4">
+                <div class="flex items-center space-x-2 text-sm text-blue-600">
+                  <i class="bi bi-paperclip"></i>
+                  <span>{{ request.documents.count }} document{{ request.documents.count|pluralize }}</span>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex space-x-2">
+                  <a href="{% url 'expert_request_detail' request.id %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+                    <i class="bi bi-eye mr-2"></i>
+                    Voir détails
+                  </a>
+                  
+                  {% if request.status == 'pending' %}
+                  <button onclick="updateRequestStatus('{{ request.id }}', 'in_progress')" class="inline-flex items-center px-3 py-2 border border-blue-300 text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <i class="bi bi-play mr-2"></i>
+                    Accepter
+                  </button>
+                  {% elif request.status == 'in_progress' %}
+                  <button onclick="updateRequestStatus('{{ request.id }}', 'completed')" class="inline-flex items-center px-3 py-2 border border-green-300 text-sm leading-4 font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    <i class="bi bi-check mr-2"></i>
+                    Terminer
+                  </button>
+                  {% endif %}
+                </div>
+                
+                <!-- Messages Button -->
+                <a href="{% url 'expert_messages' %}?request={{ request.id }}" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
+                  <i class="bi bi-chat-dots mr-1"></i>
+                  Messages
+                  {% if request.unread_messages_count > 0 %}
+                    <span class="ml-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ request.unread_messages_count }}</span>
+                  {% endif %}
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- Empty State -->
+      <div class="bg-white rounded-lg shadow p-12 text-center">
+        <i class="bi bi-file-earmark-text text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune demande trouvée</h3>
+        <p class="text-gray-500">Il n'y a actuellement aucune demande à traiter.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+  <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
+    <div class="flex-1 flex justify-between sm:hidden">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+          Précédent
+        </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+          Suivant
+        </a>
+      {% endif %}
+    </div>
+    
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm text-gray-700">
+          Résultats <span class="font-medium">{{ page_obj.start_index }}</span> à <span class="font-medium">{{ page_obj.end_index }}</span> sur <span class="font-medium">{{ page_obj.paginator.count }}</span>
+        </p>
+      </div>
+      <div>
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <span class="relative inline-flex items-center px-4 py-2 border border-primary bg-primary text-sm font-medium text-white">
+                {{ num }}
+              </span>
+            {% else %}
+              <a href="?page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                {{ num }}
+              </a>
+            {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          {% endif %}
+        </nav>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Update Status Modal -->
+<div id="statusModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3 text-center">
+      <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Confirmer l'action</h3>
+      <div class="mt-2 px-7 py-3">
+        <p class="text-sm text-gray-500" id="modalMessage">
+          Êtes-vous sûr de vouloir modifier le statut de cette demande?
+        </p>
+      </div>
+      <div class="items-center px-4 py-3">
+        <button id="confirmButton" class="px-4 py-2 bg-primary text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+          Confirmer
+        </button>
+        <button onclick="closeStatusModal()" class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-24 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Filter and search functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('statusFilter');
+    const serviceFilter = document.getElementById('serviceFilter');
+    const searchInput = document.getElementById('searchInput');
+    const requestCards = document.querySelectorAll('.request-card');
+
+    function filterRequests() {
+      const statusValue = statusFilter.value.toLowerCase();
+      const serviceValue = serviceFilter.value.toLowerCase();
+      const searchValue = searchInput.value.toLowerCase();
+
+      requestCards.forEach(card => {
+        const status = card.dataset.status.toLowerCase();
+        const service = card.dataset.service.toLowerCase();
+        const client = card.dataset.client.toLowerCase();
+        
+        const statusMatch = !statusValue || status.includes(statusValue);
+        const serviceMatch = !serviceValue || service.includes(serviceValue);
+        const searchMatch = !searchValue || client.includes(searchValue);
+
+        if (statusMatch && serviceMatch && searchMatch) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    statusFilter.addEventListener('change', filterRequests);
+    serviceFilter.addEventListener('change', filterRequests);
+    searchInput.addEventListener('input', filterRequests);
+  });
+
+  // Status update functionality
+  let currentRequestId = null;
+  let currentStatus = null;
+
+  function updateRequestStatus(requestId, status) {
+    currentRequestId = requestId;
+    currentStatus = status;
+    
+    const modal = document.getElementById('statusModal');
+    const title = document.getElementById('modalTitle');
+    const message = document.getElementById('modalMessage');
+    
+    if (status === 'in_progress') {
+      title.textContent = 'Accepter la demande';
+      message.textContent = 'Êtes-vous sûr de vouloir accepter cette demande et commencer à la traiter?';
+    } else if (status === 'completed') {
+      title.textContent = 'Terminer la demande';
+      message.textContent = 'Êtes-vous sûr de vouloir marquer cette demande comme terminée?';
+    }
+    
+    modal.classList.remove('hidden');
+  }
+
+  function closeStatusModal() {
+    document.getElementById('statusModal').classList.add('hidden');
+    currentRequestId = null;
+    currentStatus = null;
+  }
+
+  document.getElementById('confirmButton').addEventListener('click', function() {
+    if (currentRequestId && currentStatus) {
+      // Send AJAX request to update status
+      fetch(`/expert/requests/${currentRequestId}/update-status/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+          status: currentStatus
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload(); // Reload to show updated status
+        } else {
+          alert('Erreur lors de la mise à jour du statut');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur de connexion');
+      });
+    }
+    
+    closeStatusModal();
+  });
+
+  // Close modal when clicking outside
+  document.getElementById('statusModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeStatusModal();
+    }
+  });
+</script>
+{% endblock %}

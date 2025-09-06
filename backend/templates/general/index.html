@@ -1,0 +1,1076 @@
+{% extends 'general/base.html' %}
+{% load static %}
+
+{% block title %}Services Bladi - Accueil{% endblock %}
+{% block meta_description %}Services Bladi est une plateforme multilingue conçue pour accompagner les Marocains résidant en France et à l'étranger dans leurs démarches administratives et projets d'investissements ls facilitent leur accès à des financements essentiels et à des aides publiques, afin de simplifier leur quotidien et de promouvoir leur développement économique et social {% endblock %}
+{% block meta_keywords %}MRE, services, marocains, étranger, diaspora, immobilier, fiscalité, tourisme, investissement, administrative{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== WHITE TEXT RESPONSIVE DESIGN - OPTIMIZED ===== */
+
+/* GLOBAL WHITE TEXT STYLES */
+.hero-title {
+  color: #ffffff !important;
+  text-shadow: 3px 3px 8px rgba(0,0,0,0.8) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.hero-text, .mobile-text {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.7) !important;
+  font-weight: 500 !important;
+}
+
+.hero-text strong, .mobile-text span {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8) !important;
+}
+
+/* RESPONSIVE BUTTON STYLES */
+.hero-actions .btn {
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3) !important;
+  transition: all 0.4s ease !important;
+}
+
+.hero-actions .btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.4) !important;
+}
+
+.hero-actions .btn-light:hover {
+  background-color: rgba(255,255,255,0.95) !important;
+  color: #333 !important;
+}
+
+.hero-actions .btn-outline-light:hover {
+  background-color: rgba(255,255,255,0.1) !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* SOCIAL PROOF WHITE STYLING */
+.hero-social-proof div:first-child {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  text-shadow: 3px 3px 8px rgba(0,0,0,0.8) !important;
+}
+
+.hero-social-proof small {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.7) !important;
+  opacity: 0.95 !important;
+}
+
+/* ===== HERO CAROUSEL RESPONSIVENESS - PROFESSIONAL EDITION ===== */
+
+/* SMARTPHONE PORTRAIT (≤480px) - Ultra Small Screens */
+@media (max-width: 480px) {
+  .carousel-container {
+    padding: 2rem 1rem !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .hero-title {
+    font-size: 1.6rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .mobile-text {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 2rem !important;
+    padding: 0 0.5rem !important;
+  }
+  
+  .hero-actions .btn {
+    font-size: 0.9rem !important;
+    padding: 0.8rem 1.5rem !important;
+  }
+}
+  
+  .carousel-container p:not(.mobile-text):not(.hero-description) {
+    display: none;
+  }
+  
+  .carousel-container .mobile-text {
+    display: block !important;
+    font-size: 0.85rem !important;
+    line-height: 1.3;
+    padding: 0 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 400;
+    opacity: 0.95;
+  }
+}
+
+/* SMARTPHONE LANDSCAPE (481px-576px) - Small Screens */
+@media (min-width: 481px) and (max-width: 576px) {
+  .carousel-container {
+    padding: 2.5rem 1.5rem !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .hero-title {
+    font-size: 1.8rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .mobile-text {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 2rem !important;
+    padding: 0 1rem !important;
+  }
+  
+  .hero-actions .btn {
+    font-size: 0.95rem !important;
+    padding: 0.9rem 1.8rem !important;
+  }
+}
+
+/* TABLET PORTRAIT (577px-768px) - Medium Screens */
+@media (min-width: 577px) and (max-width: 768px) {
+  .carousel-container {
+    padding: 3rem 2rem !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .hero-title {
+    font-size: 2.2rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 2rem !important;
+  }
+  
+  .hero-text {
+    font-size: 1.1rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 2.5rem !important;
+    padding: 0 1rem !important;
+  }
+  
+  .hero-actions .btn {
+    font-size: 1rem !important;
+    padding: 1rem 2rem !important;
+  }
+  
+  .hero-social-proof {
+    margin-top: 3rem !important;
+  }
+}
+
+/* TABLET LANDSCAPE (769px-992px) - Large Tablets */
+@media (min-width: 769px) and (max-width: 992px) {
+  .carousel-container {
+    padding: 3.5rem 2.5rem !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .hero-title {
+    font-size: 2.6rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 2.5rem !important;
+  }
+  
+  .hero-text {
+    font-size: 1.2rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 3rem !important;
+    padding: 0 1.5rem !important;
+  }
+  
+  .hero-actions .btn {
+    font-size: 1.1rem !important;
+    padding: 1.1rem 2.2rem !important;
+  }
+  
+  .hero-social-proof {
+    margin-top: 3.5rem !important;
+  }
+  
+  .hero-social-proof div:first-child {
+    font-size: 2.2rem !important;
+  }
+}
+
+/* DESKTOP SMALL (993px-1200px) - Small Desktop */
+@media (min-width: 993px) and (max-width: 1200px) {
+  .carousel-container {
+    padding: 4rem 3rem !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .hero-title {
+    font-size: 3rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 3rem !important;
+  }
+  
+  .hero-text {
+    font-size: 1.3rem !important;
+    line-height: 1.65 !important;
+    margin-bottom: 3.5rem !important;
+    padding: 0 2rem !important;
+  }
+  
+  .hero-actions .btn {
+    font-size: 1.1rem !important;
+    padding: 1.2rem 2.5rem !important;
+  }
+  
+  .hero-social-proof {
+    margin-top: 4rem !important;
+  }
+  
+  .hero-social-proof div:first-child {
+    font-size: 2.5rem !important;
+  }
+}
+
+/* DESKTOP LARGE (≥1201px) - Large Desktop */
+@media (min-width: 1201px) {
+  .carousel-container {
+    padding: 5rem 3.5rem !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .hero-title {
+    font-size: 3.5rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 3.5rem !important;
+  }
+  
+  .hero-text {
+    font-size: 1.4rem !important;
+    line-height: 1.7 !important;
+    margin-bottom: 4rem !important;
+    padding: 0 2.5rem !important;
+  }
+  
+  .hero-actions .btn {
+    font-size: 1.2rem !important;
+    padding: 1.3rem 3rem !important;
+  }
+  
+  .hero-social-proof {
+    margin-top: 4.5rem !important;
+  }
+  
+  .hero-social-proof div:first-child {
+    font-size: 3rem !important;
+  }
+}
+
+/* GLOBAL ENHANCEMENTS */
+.hero-content-responsive {
+  max-width: 100%;
+  word-wrap: break-word;
+  hyphens: auto;
+  position: relative;
+}
+
+/* ANIMATIONS OPTIMIZED */
+.carousel-container h1, .carousel-container h2 {
+  animation-duration: 1.2s !important;
+  animation-fill-mode: both;
+}
+
+.carousel-container p {
+  animation-duration: 1.5s !important;
+  animation-delay: 0.3s !important;
+  animation-fill-mode: both;
+}
+
+.hero-actions {
+  animation-duration: 1.8s !important;
+  animation-fill-mode: both;
+}
+
+/* HIGH DPI DISPLAYS OPTIMIZATION */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .hero-title, .hero-text, .mobile-text {
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+  }
+}
+
+/* RESPONSIVE TEXT ADJUSTMENTS */
+@media (max-width: 768px) {
+  .hero-description p {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* ENHANCED RESPONSIVE STYLES FOR HERO DESCRIPTION */
+@media (max-width: 576px) {
+  .hero-description p {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 1.5rem !important;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+  .hero-description p {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+  .hero-description p {
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+  }
+}
+
+@media (min-width: 993px) {
+  .hero-description p {
+    font-size: 1.1rem !important;
+    line-height: 1.6 !important;
+  }
+}
+
+/* ACCESSIBILITY IMPROVEMENTS */
+@media (prefers-reduced-motion: reduce) {
+  .animate__animated {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* HERO DESCRIPTION RESPONSIVE STYLES - CENTRAGE PARFAIT PAR RAPPORT À LA SECTION */
+.hero-description-wrapper {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+.hero-description {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+.hero-description span {
+  font-weight: 600 !important;
+  color: #ffffff !important;
+}
+
+/* FORCE AFFICHAGE HERO DESCRIPTION */
+.hero-description {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* RESPONSIVE BREAKPOINTS POUR HERO DESCRIPTION - CENTRAGE PARFAIT */
+@media (max-width: 576px) {
+  .hero-description-wrapper {
+    padding: 0 !important;
+    margin: 1rem 0 !important;
+  }
+  .hero-description {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+    padding: 0 1rem !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .hero-description-wrapper {
+    padding: 0 !important;
+    margin: 1.5rem 0 !important;
+  }
+  .hero-description {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    padding: 0 1.5rem !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+  .hero-description-wrapper {
+    padding: 0 !important;
+    margin: 1.8rem 0 !important;
+  }
+  .hero-description {
+    font-size: 1.05rem !important;
+    line-height: 1.55 !important;
+    padding: 0 2rem !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (min-width: 993px) {
+  .hero-description-wrapper {
+    padding: 0 !important;
+    margin: 2rem 0 !important;
+  }
+  .hero-description {
+    font-size: 1.1rem !important;
+    line-height: 1.6 !important;
+    padding: 0 2.5rem !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+  }
+}
+</style>
+{% endblock %}
+
+{% block body_class %}index-page{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section id="hero" class="hero section dark-background">
+
+      <div id="hero-carousel" data-bs-interval="5000" class="container carousel carousel-fade" data-bs-ride="carousel">
+
+        <!-- Slide 1 - Hero Content Optimized -->
+        <div class="carousel-item active">
+          <div class="carousel-container hero-content-responsive">
+            <div class="container-fluid px-0">
+              <div class="row g-0 justify-content-center align-items-center min-vh-100">
+                <div class="col-11 col-sm-10 col-md-9 col-lg-8 col-xl-7 text-center bg-gray-900 rounded-lg p-4">
+                  <!-- Main Title - Responsive Scaling -->
+                  <h1 class="hero-title animate__animated animate__fadeInDown fw-bold mb-4 mb-md-5" 
+                      data-translate="welcome"
+                      style="color: #ffffff; position: relative; z-index: 3; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+                    <span class="d-block d-sm-inline-block mb-2 mb-sm-0" style="color: #ffffff;">Bienvenue à</span>
+                    <span class="d-block d-sm-inline-block" style="color: #ffffff; font-weight: 800;">Services Bladi</span>
+                  </h1>
+
+                  <!-- Description principale -->
+                  <div class="hero-description-wrapper d-flex justify-content-center align-items-center w-100">
+                    <p class="hero-description animate__animated animate__fadeInUp mb-4" 
+                       style="color: #ffffff; position: relative; z-index: 3; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); 
+                              font-size: 1.1rem; line-height: 1.6; text-align: center; margin: 1.5rem 0; width: 100%;">
+                      <span style="font-weight: 600; color: #ffffff;">Plateforme </span> conçue pour accompagner les
+                      <span style="font-weight: 600; color: #ffffff;">Marocains résidant en France et à l'étranger</span> dans leurs
+                      <span style="font-weight: 600; color: #ffffff;">démarches administratives</span> et
+                      <span style="font-weight: 600; color: #ffffff;">projets d'investissements</span>, facilitant leur accès à des
+                      <span style="font-weight: 600; color: #ffffff;">financements essentiels et à des aides publiques</span>, afin de simplifier
+                      leur quotidien et de promouvoir leur
+                      <span style="font-weight: 600; color: #ffffff;">développement économique et social</span>.
+                    </p>
+                  </div>
+
+                
+
+   
+
+                  
+              
+                  
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="carousel-control-prev" href="#hero-carousel" role="button" data-bs-slide="prev">
+          <!-- Removed prev icon as requested -->
+        </a>
+
+        <a class="carousel-control-next" href="#hero-carousel" role="button" data-bs-slide="next">
+          <!-- Removed next icon as requested -->
+        </a>
+
+      </div>
+
+      <svg class="hero-waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28 " preserveAspectRatio="none">
+        <defs>
+          <path id="wave-path" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"></path>
+        </defs>
+        <g class="wave1">
+          <use xlink:href="#wave-path" x="50" y="3"></use>
+        </g>
+        <g class="wave2">
+          <use xlink:href="#wave-path" x="50" y="0"></use>
+        </g>
+        <g class="wave3">
+          <use xlink:href="#wave-path" x="50" y="9"></use>
+        </g>
+      </svg>
+
+    </section><!-- /Hero Section -->
+
+
+    <!-- Bouton WhatsApp flottant -->
+<style>
+.whatsapp-float {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    z-index: 9999;
+}
+.whatsapp-float img {
+    width: 100px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+</style>
+<div class="whatsapp-float">
+   <a href="https://wa.me/212666679779" target="_blank" rel="noopener">
+    <i class="bi bi-whatsapp" style="font-size: 2rem; color: #25D366;"></i>
+</a>
+
+</div>
+
+
+
+    <!-- About Section -->
+    <section id="about" class="about section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>À Propos</h2>
+        <p>Notre mission pour les Services Bladi</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+        <div class="row gy-4 align-items-center">
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="content">
+              <h3 data-translate="aboutTitle">Notre engagement envers sla diaspora marocaine</h3>
+              <p data-translate="aboutParagraph1">
+                Fondée en 2023, <strong>Services Bladi</strong> est née de la volonté de créer un pont solide entre les Marocains résidant à l'étranger et leur pays d'origine. Notre mission est d'accompagner la diaspora dans toutes ses démarches, qu'elles soient administratives, touristiques, immobilières ou fiscales.
+              </p>
+              <p data-translate="aboutParagraph2">
+                Nous comprenons les défis uniques auxquels font face les MRE et nous nous engageons à faciliter leur connexion avec le Maroc, tout en préservant leur héritage culturel et en encourageant leur contribution au développement économique du pays.
+              </p>
+              <ul>
+                <li><i class="bi bi-check-circle-fill"></i> Assistance personnalisée multilingue (français, arabe, anglais, espagnol)</li>
+                <li><i class="bi bi-check-circle-fill"></i> Réseau de partenaires fiables au Maroc et à l'international</li>
+                <li><i class="bi bi-check-circle-fill"></i> Expertise dans les relations bilatérales entre le Maroc et les pays d'accueil</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="position-relative">
+              <img src="{% static 'img/working-1.jpg' %}" class="img-fluid rounded-4" alt="">
+              <div class="play-btn"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /About Section -->
+
+    <!-- Services Section -->
+    <section id="services" class="services section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Services</h2>
+        <p>Ce que nous offrons</p>
+      </div><!-- End Section Title -->
+
+
+      <div class="container">
+
+        <!-- First Row: 3 Services -->
+        <div class="row gy-4 justify-content-center">
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="bi bi-airplane" style="color: green;"></i>
+              </div>
+              <h3 data-translate="tourismTitle">Tourisme</h3>
+              <p data-translate="tourismDescription">Nous aidons les Marocains de l'étranger à explorer leur pays d'origine grâce à des séjours adaptés, organisés avec des agences marocaines.</p>
+              <a href="{% url 'tourisme' %}" class="stretched-link"></a>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="bi bi-file-earmark-text" style="color:#f0950d;"></i>
+              </div>
+              <h3 data-translate="administrativeTitle">Démarches Administratives</h3>
+              <p data-translate="administrativeDescription">Nous simplifions les démarches administratives en mettant en place des guichets dédiés et des services en ligne pour les Marocains résidant à l'étranger.</p>
+              <a href="{% url 'administrative' %}" class="stretched-link"></a>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="bi bi-cash-stack" style="color: #0dcaf0;"></i>
+              </div>
+              <h3 data-translate="investmentTitle">Investissement</h3>
+              <p data-translate="investmentDescription">Nous accompagnons les Marocains de l'étranger dans leurs projets d'investissement au Maroc, en les mettant en relation avec des partenaires locaux fiables.</p>
+              <a href="{% url 'investment' %}" class="stretched-link"></a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Second Row: 2 Centered Services -->
+        <div class="row gy-4 justify-content-center mt-4">
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="bi bi-house-door" style="color: red;"></i>
+              </div>
+              <h3 data-translate="realEstateTitle">Immobilier</h3>
+              <p data-translate="realEstateDescription">Facilitez l'acquisition ou la gestion de biens immobiliers au Maroc grâce à nos solutions adaptées à vos besoins spécifiques.</p>
+              <a href="{% url 'immobilier' %}" class="stretched-link"></a>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="bi bi-calculator" style="color: #f3268c;"></i>
+              </div>
+              <h3 data-translate="fiscalTitle">Fiscalité 360°</h3>
+              <p data-translate="fiscalDescription">Nos experts-comptables vous conseillent pour optimiser votre fiscalité entre la France et le Maroc, en tenant compte des réglementations des deux pays.</p>
+              <a href="{% url 'fiscale' %}" class="stretched-link"></a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section><!-- /Services Section -->
+
+    <!-- Features Section -->
+    <section id="features" class="features section">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Avantages</h2>
+        <p>Pourquoi choisir Services Bladi</p>
+
+      
+      </div>
+
+      <div class="container">
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-lg-6 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="100">
+            <h3>Expertise multiculturelle</h3>
+            <p>
+              Notre équipe est composée d'experts qui connaissent parfaitement les réalités des deux mondes : le pays d'accueil et le Maroc. Cette double expertise nous permet de proposer des solutions sur mesure, adaptées aux besoins spécifiques des MRE.
+            </p>
+            <ul>
+              <li><i class="bi bi-check-circle-fill"></i> Connaissance approfondie des systèmes administratifs</li>
+              <li><i class="bi bi-check-circle-fill"></i> Compréhension des nuances culturelles</li>
+              <li><i class="bi bi-check-circle-fill"></i> Réseau étendu de professionnels qualifiés</li>
+            </ul>
+          </div>
+          <div class="col-lg-6 order-1 order-lg-2 d-flex align-items-center" data-aos="zoom-in" data-aos-delay="200">
+            <img src="{% static 'img/working-2.jpg' %}" alt="" class="img-fluid">
+          </div>
+        </div>
+
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-lg-6 d-flex align-items-center" data-aos="zoom-in" data-aos-delay="200">
+            <img src="{% static 'img/working-3.jpg' %}" alt="" class="img-fluid">
+          </div>
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+            <h3>Technologies innovantes</h3>
+            <p>
+              Services Bladi sutilise les dernières technologies pour simplifier vos démarches. Notre plateforme digitale vous permet d'accéder à nos services depuis n'importe où dans le monde, 24h/24 et 7j/7.
+            </p>
+            <ul>
+              <li><i class="bi bi-check-circle-fill"></i> Suivi en temps réel de vos demandes</li>
+              <li><i class="bi bi-check-circle-fill"></i> Vidéoconférences avec nos experts</li>
+              <li><i class="bi bi-check-circle-fill"></i> Signature électronique des documents</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-lg-6 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="100">
+            <h3>Réseau de partenaires privilégiés</h3>
+            <p>
+              Au fil des années, nous avons développé un réseau solide de partenaires dans différents domaines : banques, notaires, avocats, agences immobilières, administrations publiques... Ces relations privilégiées nous permettent d'accélérer vos démarches et de vous obtenir les meilleures conditions.
+            </p>
+            <ul>
+              <li><i class="bi bi-check-circle-fill"></i> Conditions préférentielles pour nos clients</li>
+              <li><i class="bi bi-check-circle-fill"></i> Traitement prioritaire des dossiers</li>
+              <li><i class="bi bi-check-circle-fill"></i> Accompagnement personnalisé à chaque étape</li>
+            </ul>
+          </div>
+          <div class="col-lg-6 order-1 order-lg-2 d-flex align-items-center" data-aos="zoom-in" data-aos-delay="200">
+            <img src="{% static 'img/working-4.jpg' %}" alt="" class="img-fluid">
+          </div>
+        </div>
+      </div>
+    </section><!-- /Features Section -->
+
+    <!-- Enhanced Stats Counter Section -->
+    <section id="stats-counter" class="stats-counter section light-background">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Notre Impact en Chiffres</h2>
+        <p>Des résultats concrets qui témoignent de notre expertise et de votre confiance</p>
+      </div>
+
+      <div class="container">
+        <div class="row gy-4">
+
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="stats-item enhanced text-center">
+              <div class="stats-icon">
+                <i class="bi bi-people-fill"></i>
+              </div>
+              <div class="stats-content">
+                <span class="purecounter" data-purecounter-start="0" data-purecounter-end="3482" data-purecounter-duration="1">3,482</span>
+                <h4>Clients Satisfaits</h4>
+                <p>Familles MRE accompagnées avec succès</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="stats-item enhanced text-center">
+              <div class="stats-icon">
+                <i class="bi bi-house-fill"></i>
+              </div>
+              <div class="stats-content">
+                <span class="purecounter" data-purecounter-start="0" data-purecounter-end="521" data-purecounter-duration="1">521</span>
+                <h4>Projets Immobiliers</h4>
+                <p>Acquisitions et investissements réalisés</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="stats-item enhanced text-center">
+              <div class="stats-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+              </div>
+              <div class="stats-content">
+                <span class="purecounter" data-purecounter-start="0" data-purecounter-end="245" data-purecounter-duration="1">245</span>
+                <h4>Investissements Réussis</h4>
+                <p>Projets d'investissement menés à bien</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="stats-item enhanced text-center">
+              <div class="stats-icon">
+                <i class="bi bi-globe-europe-africa"></i>
+              </div>
+              <div class="stats-content">
+                <span class="purecounter" data-purecounter-start="0" data-purecounter-end="15" data-purecounter-duration="1">15</span>
+                <h4>Pays Couverts</h4>
+                <p>Présence internationale pour vous servir</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section><!-- /Enhanced Stats Counter Section -->
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials section">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Témoignages</h2>
+        <p>Ce que nos clients disent de nous</p>
+      </div>
+
+      <div class="container">
+
+        <div class="testimonials-slider swiper" data-aos="fade-up" data-aos-delay="100">
+          <div class="swiper-wrapper">
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  Grâce à Services Bladi, j'ai pu investir dans un projet immobilier à Marrakech tout en étant à Paris. Leur équipe a géré toutes les démarches administratives et m'a accompagné jusqu'à la livraison des clés. Un service impeccable !
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <div>
+                  <img src="{% static 'img/testimonials/testimonials-1.jpg' %}" class="testimonial-img" alt="">
+                  <h3>Karim Bensouda</h3>
+                  <h4>Entrepreneur, Paris</h4>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  En tant que MRE vivant à Barcelone, je cherchais à organiser un voyage pour faire découvrir mes racines à mes enfants. Services Bladi a conçu un circuit sur mesure qui nous a permis de découvrir le Maroc authentique. Mes enfants en gardent un souvenir inoubliable.
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <div>
+                  <img src="{% static 'img/testimonials/testimonials-2.jpg' %}" class="testimonial-img" alt="">
+                  <h3>Fatima Ouazzani</h3>
+                  <h4>Médecin, Barcelone</h4>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  La gestion de ma fiscalité entre la France et le Maroc était un vrai casse-tête avant que je ne découvre Services Bladi. Leurs conseillers ont optimisé ma situation fiscale et m'ont fait économiser beaucoup d'argent. Je recommande vivement leurs services.
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <div>
+                  <img src="{% static 'img/testimonials/testimonials-3.jpg' %}" class="testimonial-img" alt="">
+                  <h3>Mohammed Alami</h3>
+                  <h4>Ingénieur, Lyon</h4>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  J'avais des problèmes administratifs concernant mes papiers d'identité marocains. L'équipe de Services Bladi a pris en charge mon dossier et a résolu la situation en un temps record. Leur professionnalisme et leur réactivité m'ont impressionné.
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <div>
+                  <img src="{% static 'img/testimonials/testimonials-4.jpg' %}" class="testimonial-img" alt="">
+                  <h3>Nadia Tahiri</h3>
+                  <h4>Enseignante, Bruxelles</h4>
+                </div>
+              </div>
+            </div><!-- End testimonial item -->
+
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+
+      </div>
+    </section><!-- End Testimonials Section -->
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact section">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Contact</h2>
+        <p>Nous contacter</p>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row gy-4">
+          <div class="col-lg-6">
+            <div class="row gy-4">
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="200">
+                  <i class="bi bi-geo-alt"></i>
+                  <h3>Adresse</h3>
+                  <p>123 Rue Antonin artaud  rosny sous bois </p>
+                  <p> 93110 Paris, France</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="300">
+                  <i class="bi bi-telephone"></i>
+                  <h3>Téléphone</h3>
+                  <p>+33 7 83 18 78 90</p>
+                  <p>+212 5 22 12 34 56</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="400">
+                  <i class="bi bi-envelope"></i>
+                  <h3>Email</h3>
+                  <p>advalmaroc@gmail.com</p>
+                  <p>pgcparis@gmail.com</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item" data-aos="fade" data-aos-delay="500">
+                  <i class="bi bi-clock"></i>
+                  <h3>Horaires d'ouverture</h3>
+                  <p>Lundi - samedi</p>
+                  <p>9:30 - 19:00</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <form action="{% url 'contact' %}" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="200">
+              {% csrf_token %}
+              <div class="row gy-4">
+                <div class="col-md-6">
+                  <input type="text" name="name" class="form-control" placeholder="Votre Nom" required>
+                </div>
+                <div class="col-md-6">
+                  <input type="email" class="form-control" name="email" placeholder="Votre Email" required>
+                </div>
+                <div class="col-md-12">
+                  <input type="text" class="form-control" name="subject" placeholder="Sujet" required>
+                </div>
+                <div class="col-md-12">
+                  <textarea class="form-control" name="message" rows="6" placeholder="Message" required></textarea>
+                </div>
+                <div class="col-md-12 text-center">
+                  <div class="loading">Chargement</div>
+                  <div class="error-message"></div>
+                  <div class="sent-message">Votre message a été envoyé. Merci !</div>
+                  <button type="submit">Envoyer</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section><!-- End Contact Section -->
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq section">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>F.A.Q</h2>
+        <p>Questions fréquemment posées</p>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row gy-4">
+          <div class="col-lg-10 offset-lg-1">
+            <div class="accordion accordion-flush" id="faqlist">
+              
+              <div class="accordion-item" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-content-1">
+                    <i class="bi bi-question-circle question-icon"></i>
+                    Comment pouvez-vous m'aider dans mes démarches administratives au Maroc ?
+                  </button>
+                </h3>
+                <div id="faq-content-1" class="accordion-collapse collapse" data-bs-parent="#faqlist">
+                  <div class="accordion-body">
+                    Nous proposons un accompagnement complet pour toutes vos démarches administratives : renouvellement de passeport, carte d'identité nationale, actes de naissance, certificats de résidence, etc. Notre équipe peut se charger de l'ensemble des procédures, vous évitant ainsi de vous déplacer. Nous disposons de partenariats avec différentes administrations marocaines pour accélérer le traitement de vos dossiers.
+                  </div>
+                </div>
+              </div><!-- End F.A.Q Item-->
+
+              <div class="accordion-item" data-aos="fade-up" data-aos-delay="300">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-content-2">
+                    <i class="bi bi-question-circle question-icon"></i>
+                    Puis-je acquérir un bien immobilier au Maroc en étant résident à l'étranger ?
+                  </button>
+                </h3>
+                <div id="faq-content-2" class="accordion-collapse collapse" data-bs-parent="#faqlist">
+                  <div class="accordion-body">
+                    Absolument ! En tant que Marocain résidant à l'étranger, vous bénéficiez des mêmes droits qu'un résident pour acquérir un bien immobilier au Maroc. Notre équipe peut vous accompagner dans toutes les étapes : recherche du bien, négociation, vérification juridique, financement (avec possibilité de crédit immobilier international) et formalités administratives. Nous assurons également la gestion locative si vous souhaitez mettre votre bien en location.
+                  </div>
+                </div>
+              </div><!-- End F.A.Q Item-->
+
+              <div class="accordion-item" data-aos="fade-up" data-aos-delay="400">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-content-3">
+                    <i class="bi bi-question-circle question-icon"></i>
+                    Comment fonctionne votre service d'investissement ?
+                  </button>
+                </h3>
+                <div id="faq-content-3" class="accordion-collapse collapse" data-bs-parent="#faqlist">
+                  <div class="accordion-body">
+                    Notre service d'investissement comprend une analyse complète de vos objectifs financiers, une étude des opportunités d'investissement au Maroc (immobilier, commerce, agriculture, industries, etc.), une mise en relation avec des partenaires fiables, un accompagnement dans la création de société si nécessaire, et un suivi de votre investissement. Nous proposons également des conseils fiscaux pour optimiser votre investissement en tenant compte de votre statut de MRE.
+                  </div>
+                </div>
+              </div><!-- End F.A.Q Item-->
+
+              <div class="accordion-item" data-aos="fade-up" data-aos-delay="500">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-content-4">
+                    <i class="bi bi-question-circle question-icon"></i>
+                    Quelles sont les obligations fiscales pour un MRE ?
+                  </button>
+                </h3>
+                <div id="faq-content-4" class="accordion-collapse collapse" data-bs-parent="#faqlist">
+                  <div class="accordion-body">
+                    Les obligations fiscales d'un MRE dépendent de plusieurs facteurs : votre pays de résidence, l'existence de conventions fiscales entre ce pays et le Maroc, la nature et la source de vos revenus. En général, vous êtes imposable au Maroc uniquement sur vos revenus de source marocaine. Notre équipe d'experts-comptables peut réaliser un audit de votre situation fiscale et vous proposer des stratégies d'optimisation légales, tout en vous accompagnant dans vos déclarations fiscales.
+                  </div>
+                </div>
+              </div><!-- End F.A.Q Item-->
+
+              <div class="accordion-item" data-aos="fade-up" data-aos-delay="600">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-content-5">
+                    <i class="bi bi-question-circle question-icon"></i>
+                    Comment organisez-vous les voyages touristiques au Maroc ?
+                  </button>
+                </h3>
+                <div id="faq-content-5" class="accordion-collapse collapse" data-bs-parent="#faqlist">
+                  <div class="accordion-body">
+                    Nous concevons des circuits sur mesure en fonction de vos centres d'intérêt, du temps dont vous disposez et de votre budget. Ces circuits peuvent inclure les villes impériales, le désert, les montagnes, le littoral ou des expériences thématiques (gastronomie, artisanat, patrimoine). Nous nous occupons de toutes les réservations (hôtels, transport, guides) et pouvons organiser des rencontres avec des artisans, des cours de cuisine traditionnelle ou des visites privées de sites historiques.
+                  </div>
+                </div>
+              </div><!-- End F.A.Q Item-->
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- End F.A.Q Section -->
+
+    <!-- Call-to-Action Section -->
+    <section id="cta" class="cta section">
+      <div class="container" data-aos="zoom-in">
+        <div class="row g-5">
+          <div class="col-lg-8 col-md-6 content d-flex flex-column justify-content-center order-last order-md-first">
+            <h3>Prêt à concrétiser vos projets au Maroc ?</h3>
+            <p>Que vous souhaitiez investir, acquérir un bien immobilier, organiser un voyage ou simplifier vos démarches administratives, notre équipe d'experts est là pour vous accompagner à chaque étape.</p>
+            <a class="cta-btn align-self-start" href="{% url 'contact' %}">Contactez-nous</a>
+          </div>
+          <div class="col-lg-4 col-md-6 order-first order-md-last d-flex align-items-center">
+            <div class="img">
+              <img src="{% static 'img/services.jpg' %}" alt="" class="img-fluid">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- End Call-to-Action Section -->
+
+   
+
+
+
+
+<!-- Bootstrap JS (nécessaire pour le modal) -->
+
+{% endblock %}
+

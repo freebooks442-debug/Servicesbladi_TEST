@@ -1,0 +1,538 @@
+{% extends 'admin/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Modifier mon Profil" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Custom gradient */
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #C49A5A 0%, #D4B483 100%);
+  }
+
+  /* Form focus states */
+  .form-input:focus {
+    border-color: #C49A5A;
+    box-shadow: 0 0 0 3px rgba(196, 154, 90, 0.1);
+  }
+
+  /* File upload styling */
+  .file-upload-area {
+    background: linear-gradient(45deg, #f8fafc, #f1f5f9);
+    border: 2px dashed #cbd5e1;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .file-upload-area:hover {
+    border-color: #C49A5A;
+    background: linear-gradient(45deg, #fef7ed, #fef3e2);
+    transform: translateY(-1px);
+  }
+
+  .file-upload-area.drag-over {
+    border-color: #C49A5A;
+    background: linear-gradient(45deg, #fef7ed, #fef3e2);
+    transform: scale(1.02);
+  }
+
+  /* Profile picture preview */
+  .profile-preview-container {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .profile-preview-container:hover {
+    transform: scale(1.05);
+  }
+
+  .profile-preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .profile-preview-container:hover .profile-preview-overlay {
+    opacity: 1;
+  }
+
+  /* Save button animation */
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  }
+  
+  .btn-save-pulse {
+    animation: pulse 2s infinite;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="bg-gold-gradient px-6 py-4 flex justify-between items-center">
+                <h1 class="text-white text-xl font-bold flex items-center">
+                    <i class="bi bi-person-circle mr-3 text-2xl"></i>
+                    {% trans "Modifier mon Profil Administrateur" %}
+                </h1>
+                <a href="{% url 'admin_profile' %}" 
+                   class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center text-sm font-medium">
+                    <i class="bi bi-arrow-left mr-2"></i>
+                    {% trans "Retour à Mon Profil" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 rounded-lg p-4 {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                    <div class="flex items-center">
+                        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-exclamation-triangle-fill{% elif message.tags == 'warning' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %} mr-3"></i>
+                        <span class="font-medium">{{ message }}</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-gray-400 hover:text-gray-600">
+                            <i class="bi bi-x text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Profile Picture Section -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-camera-fill mr-3 text-indigo-600"></i>
+                        {% trans "Photo de Profil" %}
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center space-x-6">
+                        <div class="shrink-0">
+                            {% if request.user.profile_picture %}
+                                <img src="{{ request.user.get_profile_picture_url }}" 
+                                     alt="Current profile picture" 
+                                     id="current-profile-img"
+                                     class="w-20 h-20 rounded-full object-cover border-4 border-gray-200 shadow-sm">
+                            {% else %}
+                                <div id="profile-placeholder" class="w-20 h-20 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center border-4 border-gray-200 shadow-sm">
+                                    <i class="bi bi-person-fill text-gray-400 text-2xl"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <label for="id_profile_picture" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Changer la photo de profil" %}
+                            </label>
+                            
+                            <!-- File Input -->
+                            <input type="file" 
+                                   name="profile_picture" 
+                                   id="id_profile_picture"
+                                   accept="image/jpeg,image/png,image/gif"
+                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer border border-gray-300 rounded-lg p-2"
+                                   onchange="handleFileSelect(this)">
+                            
+                            <!-- Preview Area -->
+                            <div id="preview-area" class="hidden mt-3">
+                                <div class="border-2 border-dashed border-green-300 bg-green-50 rounded-lg p-4 text-center">
+                                    <i class="bi bi-check-circle-fill text-green-500 text-2xl mb-2"></i>
+                                    <p class="text-sm text-green-700 font-medium" id="file-name"></p>
+                                    <p class="text-xs text-gray-500">{% trans "Fichier prêt à être téléchargé" %}</p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-sm text-gray-500 mt-2">
+                                {% trans "Formats acceptés: JPG, PNG, GIF. Taille maximale: 5MB" %}
+                            </p>
+                            {% if user_form.profile_picture.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.profile_picture.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-person-lines-fill mr-3 text-blue-600"></i>
+                        {% trans "Informations Personnelles" %}
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ user_form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Prénom" %} <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   name="{{ user_form.first_name.name }}" 
+                                   id="{{ user_form.first_name.id_for_label }}"
+                                   value="{{ user_form.first_name.value|default:'' }}"
+                                   class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                                   placeholder="{% trans 'Entrez votre prénom' %}">
+                            {% if user_form.first_name.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.first_name.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ user_form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Nom de famille" %} <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   name="{{ user_form.name.name }}" 
+                                   id="{{ user_form.name.id_for_label }}"
+                                   value="{{ user_form.name.value|default:'' }}"
+                                   class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                                   placeholder="{% trans 'Entrez votre nom' %}">
+                            {% if user_form.name.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.name.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ user_form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Adresse email" %} <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" 
+                                   name="{{ user_form.email.name }}" 
+                                   id="{{ user_form.email.id_for_label }}"
+                                   value="{{ user_form.email.value|default:'' }}"
+                                   class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                                   placeholder="{% trans 'votre@email.com' %}">
+                            {% if user_form.email.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.email.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ user_form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Numéro de téléphone" %}
+                            </label>
+                            <input type="tel" 
+                                   name="{{ user_form.phone.name }}" 
+                                   id="{{ user_form.phone.id_for_label }}"
+                                   value="{{ user_form.phone.value|default:'' }}"
+                                   class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                                   placeholder="{% trans '+212 6 00 00 00 00' %}">
+                            {% if user_form.phone.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.phone.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ user_form.birth_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Date de naissance" %}
+                            </label>
+                            <input type="date" 
+                                   name="{{ user_form.birth_date.name }}" 
+                                   id="{{ user_form.birth_date.id_for_label }}"
+                                   value="{{ user_form.birth_date.value|default:'' }}"
+                                   class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors">
+                            {% if user_form.birth_date.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.birth_date.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ user_form.residence_country.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Pays de résidence" %}
+                            </label>
+                            <select name="{{ user_form.residence_country.name }}" 
+                                    id="{{ user_form.residence_country.id_for_label }}"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors">
+                                <option value="">{% trans "Sélectionnez un pays" %}</option>
+                                <option value="Maroc" {% if user_form.residence_country.value == "Maroc" %}selected{% endif %}>Maroc</option>
+                                <option value="France" {% if user_form.residence_country.value == "France" %}selected{% endif %}>France</option>
+                                <option value="Espagne" {% if user_form.residence_country.value == "Espagne" %}selected{% endif %}>Espagne</option>
+                                <option value="Allemagne" {% if user_form.residence_country.value == "Allemagne" %}selected{% endif %}>Allemagne</option>
+                                <option value="Italie" {% if user_form.residence_country.value == "Italie" %}selected{% endif %}>Italie</option>
+                                <option value="Belgique" {% if user_form.residence_country.value == "Belgique" %}selected{% endif %}>Belgique</option>
+                                <option value="Pays-Bas" {% if user_form.residence_country.value == "Pays-Bas" %}selected{% endif %}>Pays-Bas</option>
+                                <option value="Canada" {% if user_form.residence_country.value == "Canada" %}selected{% endif %}>Canada</option>
+                                <option value="États-Unis" {% if user_form.residence_country.value == "États-Unis" %}selected{% endif %}>États-Unis</option>
+                            </select>
+                            {% if user_form.residence_country.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.residence_country.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-gear-fill mr-3 text-purple-600"></i>
+                        {% trans "Paramètres du Compte" %}
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ user_form.preferred_languages.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Langue préférée" %}
+                            </label>
+                            <select name="{{ user_form.preferred_languages.name }}" 
+                                    id="{{ user_form.preferred_languages.id_for_label }}"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors">
+                                <option value="fr" {% if user_form.preferred_languages.value == "fr" %}selected{% endif %}>Français</option>
+                                <option value="ar" {% if user_form.preferred_languages.value == "ar" %}selected{% endif %}>العربية</option>
+                                <option value="en" {% if user_form.preferred_languages.value == "en" %}selected{% endif %}>English</option>
+                                <option value="es" {% if user_form.preferred_languages.value == "es" %}selected{% endif %}>Español</option>
+                            </select>
+                            {% if user_form.preferred_languages.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ user_form.preferred_languages.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Type de compte" %}
+                            </label>
+                            <div class="px-4 py-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <i class="bi bi-shield-check mr-1"></i>
+                                    {% trans "Administrateur" %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Change Section -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="bi bi-lock-fill mr-3 text-red-600"></i>
+                        {% trans "Changer le Mot de Passe" %}
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-start">
+                            <i class="bi bi-info-circle-fill text-amber-600 mr-3 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm text-amber-800">
+                                    {% trans "Laissez ces champs vides si vous ne souhaitez pas changer votre mot de passe." %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Nouveau mot de passe" %}
+                            </label>
+                            <input type="password" 
+                                   name="new_password" 
+                                   id="new_password"
+                                   class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                                   placeholder="{% trans 'Minimum 8 caractères' %}">
+                        </div>
+
+                        <div>
+                            <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Confirmer le mot de passe" %}
+                            </label>
+                            <input type="password" 
+                                   name="confirm_password" 
+                                   id="confirm_password"
+                                   class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                                   placeholder="{% trans 'Répétez le mot de passe' %}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                    <a href="{% url 'admin_profile' %}" 
+                       class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center font-medium">
+                        <i class="bi bi-x-circle mr-2"></i>
+                        {% trans "Annuler" %}
+                    </a>
+                    <button type="submit" 
+                            class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium btn-save-pulse">
+                        <i class="bi bi-check-circle-fill mr-2"></i>
+                        {% trans "Sauvegarder les modifications" %}
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Help Section -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-6">
+            <div class="flex items-start">
+                <i class="bi bi-question-circle-fill text-blue-600 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h4 class="font-semibold text-blue-800 mb-2">{% trans "Besoin d'aide ?" %}</h4>
+                    <p class="text-blue-700 text-sm">
+                        {% trans "Assurez-vous que toutes vos informations sont exactes et à jour. Les champs marqués d'un astérisque (*) sont obligatoires. Si vous rencontrez des difficultés, contactez le support technique." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Simple file handling function
+function handleFileSelect(input) {
+    const file = input.files[0];
+    const previewArea = document.getElementById('preview-area');
+    const fileName = document.getElementById('file-name');
+    
+    if (file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('{% trans "Veuillez sélectionner un fichier image valide." %}');
+            input.value = '';
+            previewArea.classList.add('hidden');
+            return;
+        }
+        
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('{% trans "La taille du fichier ne doit pas dépasser 5MB." %}');
+            input.value = '';
+            previewArea.classList.add('hidden');
+            return;
+        }
+        
+        // Show preview
+        fileName.textContent = file.name;
+        previewArea.classList.remove('hidden');
+        
+        // Update current profile image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const currentImg = document.getElementById('current-profile-img');
+            const placeholder = document.getElementById('profile-placeholder');
+            
+            if (currentImg) {
+                currentImg.src = e.target.result;
+            } else if (placeholder) {
+                placeholder.outerHTML = `
+                    <img src="${e.target.result}" 
+                         alt="Profile picture preview" 
+                         id="current-profile-img"
+                         class="w-20 h-20 rounded-full object-cover border-4 border-gray-200 shadow-sm">
+                `;
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewArea.classList.add('hidden');
+    }
+}
+
+// Form submission handling
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    
+    if (form) {
+        form.addEventListener('submit', function() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {% trans "Sauvegarde en cours..." %}
+                `;
+            }
+        });
+    }
+    
+    // Password validation
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    if (newPassword && confirmPassword) {
+        function validatePasswords() {
+            if (newPassword.value && confirmPassword.value) {
+                if (newPassword.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('{% trans "Les mots de passe ne correspondent pas" %}');
+                    confirmPassword.classList.add('border-red-500');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                    confirmPassword.classList.remove('border-red-500');
+                }
+            }
+        }
+        
+        newPassword.addEventListener('input', validatePasswords);
+        confirmPassword.addEventListener('input', validatePasswords);
+    }
+
+    // Check for success message and reload sidebar after profile picture update
+    const successMessage = document.querySelector('.bg-green-50');
+    if (successMessage && successMessage.textContent.includes('{% trans "Profil mis à jour avec succès" %}')) {
+        // Reload parent window to update sidebar
+        setTimeout(() => {
+            if (window.parent && window.parent !== window) {
+                window.parent.location.reload();
+            } else {
+                window.location.reload();
+            }
+        }, 1500);
+    }
+});
+</script>
+
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' and 'profil' in message|lower %}
+        <script>
+        // Force refresh of all profile images after successful update
+        setTimeout(() => {
+            // Add timestamp to force refresh
+            const timestamp = new Date().getTime();
+            const profileImages = document.querySelectorAll('img[src*="profile_pictures"], img[alt*="profile"], img[alt*="Profile"]');
+            profileImages.forEach(img => {
+                const src = img.src;
+                if (src.includes('?')) {
+                    img.src = src.split('?')[0] + '?v=' + timestamp;
+                } else {
+                    img.src = src + '?v=' + timestamp;
+                }
+            });
+            
+            // Also update parent window if in iframe
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({type: 'profileUpdated', timestamp: timestamp}, '*');
+            }
+        }, 100);
+        </script>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+{% endblock %}

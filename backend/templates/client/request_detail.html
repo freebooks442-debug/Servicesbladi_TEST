@@ -1,0 +1,531 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Demande #{{ demande.id }} - Service Bladi{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center space-x-4">
+        <a href="/requests/client/" 
+           class="inline-flex items-center text-gray-600 hover:text-primary transition-colors">
+          <i class="bi bi-arrow-left mr-2"></i>
+          Retour aux demandes
+        </a>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="text-sm text-gray-500">Demande #{{ demande.id }}</span>
+      </div>
+    </div>
+    
+    <div class="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white">
+      <div class="flex items-start justify-between">
+        <div>
+          <h1 class="text-2xl font-bold mb-2">{{ demande.title }}</h1>
+          <p class="text-white/90 mb-4">{{ demande.service.title }}</p>
+          <div class="flex items-center space-x-6 text-sm text-white/80">
+            <div class="flex items-center">
+              <i class="bi bi-calendar mr-2"></i>
+              Créée le {{ demande.created_at|date:"d/m/Y" }}
+            </div>
+            <div class="flex items-center">
+              <i class="bi bi-clock mr-2"></i>
+              Modifiée le {{ demande.updated_at|date:"d/m/Y" }}
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col items-end space-y-2">
+          <!-- Status Badge -->
+          <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium
+            {% if demande.status == 'completed' %}bg-green-100 text-green-800
+            {% elif demande.status == 'in_progress' %}bg-blue-100 text-blue-800
+            {% elif demande.status == 'pending_info' %}bg-yellow-100 text-yellow-800
+            {% elif demande.status == 'cancelled' %}bg-red-100 text-red-800
+            {% else %}bg-gray-100 text-gray-800{% endif %}">
+            {{ demande.get_status_display }}
+          </span>
+          <!-- Priority Badge -->
+          <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium
+            {% if demande.priority == 'urgent' %}bg-red-500 text-white
+            {% elif demande.priority == 'high' %}bg-orange-500 text-white
+            {% elif demande.priority == 'medium' %}bg-yellow-500 text-white
+            {% else %}bg-gray-500 text-white{% endif %}">
+            {{ demande.get_priority_display }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Description Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="bi bi-file-text mr-2 text-primary"></i>
+            Description de la demande
+          </h2>
+        </div>
+        <div class="p-6">
+          <div class="prose max-w-none">
+            <p class="text-gray-700 leading-relaxed">
+              {{ demande.description|default:"Aucune description fournie pour cette demande." }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="bi bi-paperclip mr-2 text-primary"></i>
+            Documents
+          </h2>
+          <button onclick="openUploadModal()" 
+                  class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+            <i class="bi bi-upload mr-2"></i>
+            Ajouter un document
+          </button>
+        </div>
+        <div class="p-6">
+          {% if demande.documents.exists %}
+            <div class="space-y-3">
+              {% for document in demande.documents.all %}
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                      <i class="bi bi-file-earmark text-primary text-xl"></i>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-900">
+                        {{ document.name|default:document.file.name }}
+                      </h4>
+                      <p class="text-xs text-gray-500">
+                        Téléchargé par {{ document.uploaded_by.get_full_name }} le {{ document.created_at|date:"d/m/Y" }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <a href="{{ document.file.url }}" target="_blank" 
+                       class="inline-flex items-center px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors">
+                      <i class="bi bi-eye mr-1"></i>
+                      Voir
+                    </a>
+                    <a href="{{ document.file.url }}" download 
+                       class="inline-flex items-center px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors">
+                      <i class="bi bi-download mr-1"></i>
+                      Télécharger
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-8">
+              <i class="bi bi-file-earmark-text text-4xl text-gray-400 mb-3"></i>
+              <p class="text-gray-500">Aucun document n'a été téléchargé pour cette demande.</p>
+              <button onclick="openUploadModal()" 
+                      class="mt-3 inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                <i class="bi bi-upload mr-2"></i>
+                Télécharger le premier document
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>      <!-- Messages Section -->
+      {% if messages %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+              <i class="bi bi-chat-dots mr-2 text-primary"></i>
+              Messages ({{ messages|length }})
+            </h2>
+          </div>
+          <div class="p-6">
+            <div class="space-y-4 max-h-96 overflow-y-auto">
+              {% for message in messages %}
+                <div class="flex items-start space-x-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {{ message.sender.first_name|first|upper }}{{ message.sender.last_name|first|upper }}
+                    </div>
+                  </div>
+                  <div class="flex-1">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-900">{{ message.sender.get_full_name }}</span>
+                        <span class="text-xs text-gray-500">{{ message.sent_at|date:"d/m/Y H:i" }}</span>
+                      </div>
+                      <p class="text-sm text-gray-700">{{ message.content }}</p>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="bi bi-gear mr-2 text-primary"></i>
+            Actions rapides
+          </h3>
+        </div>
+        <div class="p-6 space-y-3">
+          {% if demande.status != 'completed' and demande.status != 'cancelled' %}
+            <button onclick="openEditModal()" 
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+              <i class="bi bi-pencil mr-2"></i>
+              Modifier la demande
+            </button>
+          {% endif %}
+          
+          {% if demande.status == 'new' or demande.status == 'pending_info' %}
+            <button onclick="openCancelModal()" 
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+              <i class="bi bi-x-circle mr-2"></i>
+              Annuler la demande
+            </button>
+          {% endif %}
+          
+          <a href="/requests/appointments/" 
+             class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 text-sm font-medium">
+            <i class="bi bi-calendar-plus mr-2"></i>
+            Prendre rendez-vous
+          </a>
+        </div>
+      </div>
+
+      <!-- Request Details -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="bi bi-info-circle mr-2 text-primary"></i>
+            Détails de la demande
+          </h3>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm font-medium text-gray-600">Service</span>
+            <span class="text-sm text-gray-900">{{ demande.service.title }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm font-medium text-gray-600">Référence</span>
+            <span class="text-sm text-gray-900 font-mono">REQ-{{ demande.id }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm font-medium text-gray-600">Date de création</span>
+            <span class="text-sm text-gray-900">{{ demande.created_at|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="text-sm font-medium text-gray-600">Dernière mise à jour</span>
+            <span class="text-sm text-gray-900">{{ demande.updated_at|date:"d/m/Y H:i" }}</span>
+          </div>
+          {% if demande.expert %}
+            <div class="flex justify-between items-center py-2">
+              <span class="text-sm font-medium text-gray-600">Expert assigné</span>
+              <span class="text-sm text-gray-900">{{ demande.expert.get_full_name }}</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Expert Info -->
+      {% if demande.expert %}
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="bi bi-person-badge mr-2 text-primary"></i>
+            Expert assigné
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center space-x-3 mb-4">
+            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold">
+              {{ demande.expert.first_name|first }}{{ demande.expert.last_name|first }}
+            </div>
+            <div>
+              <h4 class="text-sm font-medium text-gray-900">{{ demande.expert.get_full_name }}</h4>
+              {% if demande.expert.expert_profile %}
+                <p class="text-xs text-gray-500">{{ demande.expert.expert_profile.specialization }}</p>
+              {% endif %}
+            </div>
+          </div>
+          <a href="#" 
+             class="w-full inline-flex items-center justify-center px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-lg transition-all duration-200 text-sm font-medium">
+            <i class="bi bi-person-lines-fill mr-2"></i>
+            Voir le profil
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Appointments -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <i class="bi bi-calendar-event mr-2 text-primary"></i>
+            Rendez-vous
+          </h3>
+        </div>
+        <div class="p-6">
+          {% if appointments %}
+            <div class="space-y-3">
+              {% for appointment in appointments %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ appointment.date_time|date:"d/m/Y" }}</p>
+                    <p class="text-xs text-gray-500">{{ appointment.date_time|time:"H:i" }} - {{ appointment.get_consultation_type_display }}</p>
+                  </div>
+                  <a href="/requests/appointments/detail/{{ appointment.id }}/" 
+                     class="inline-flex items-center px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors">
+                    <i class="bi bi-eye mr-1"></i>
+                    Voir
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-calendar-x text-2xl text-gray-400 mb-2"></i>
+              <p class="text-sm text-gray-500">Aucun rendez-vous planifié</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Modifier la demande #{{ demande.id }}</h3>
+        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <form method="post" action="/requests/client/edit/{{ demande.id }}/">
+        {% csrf_token %}
+        <div class="space-y-4">
+          <div>
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="title" name="title" value="{{ demande.title }}" required>
+          </div>
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="description" name="description" rows="4">{{ demande.description }}</textarea>
+          </div>
+          <div>
+            <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="priority" name="priority">
+              <option value="low" {% if demande.priority == 'low' %}selected{% endif %}>Basse</option>
+              <option value="medium" {% if demande.priority == 'medium' %}selected{% endif %}>Moyenne</option>
+              <option value="high" {% if demande.priority == 'high' %}selected{% endif %}>Haute</option>
+              <option value="urgent" {% if demande.priority == 'urgent' %}selected{% endif %}>Urgente</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200">
+            Annuler
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200">
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Modal -->
+<div id="cancelModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Annuler la demande #{{ demande.id }}</h3>
+        <button onclick="closeCancelModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <p class="text-gray-600 mb-6">Êtes-vous sûr de vouloir annuler cette demande ? Cette action ne peut pas être annulée.</p>
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeCancelModal()" class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200">
+          Garder la demande
+        </button>
+        <form method="post" action="/requests/client/cancel/{{ demande.id }}/" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200">
+            Annuler la demande
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Télécharger un document</h3>
+        <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <form action="/requests/documents/upload/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="demande_id" value="{{ demande.id }}">
+        <div class="space-y-4">
+          <div>
+            <label for="document_name" class="block text-sm font-medium text-gray-700 mb-2">Nom du document</label>
+            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="document_name" name="name" required>
+          </div>
+          <div>
+            <label for="document_file" class="block text-sm font-medium text-gray-700 mb-2">Fichier</label>
+            <input type="file" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="document_file" name="file" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            <p class="text-xs text-gray-500 mt-1">Formats acceptés: PDF, DOC, DOCX, JPG, PNG (max. 10 MB)</p>
+          </div>
+          <div>
+            <label for="document_type" class="block text-sm font-medium text-gray-700 mb-2">Type de document</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="document_type" name="type">
+              <option value="identity">Pièce d'identité</option>
+              <option value="proof">Justificatif de domicile</option>
+              <option value="contract">Contrat</option>
+              <option value="invoice">Facture</option>
+              <option value="report">Rapport</option>
+              <option value="other">Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button type="button" onclick="closeUploadModal()" class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200">
+            Annuler
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-200">
+            Télécharger
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Modal functions
+function openEditModal() {
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+function openCancelModal() {
+  document.getElementById('cancelModal').classList.remove('hidden');
+}
+
+function closeCancelModal() {
+  document.getElementById('cancelModal').classList.add('hidden');
+}
+
+function openUploadModal() {
+  document.getElementById('uploadModal').classList.remove('hidden');
+}
+
+function closeUploadModal() {
+  document.getElementById('uploadModal').classList.add('hidden');
+}
+
+// Close modals when clicking outside
+document.addEventListener('click', function(event) {
+  const modals = ['editModal', 'cancelModal', 'uploadModal'];
+  modals.forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (event.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
+});
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Défilement vers le bas des messages
+    const messagesContainer = document.querySelector('.messages-container');
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Ajout des délais d'animation aux éléments de la timeline
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    timelineItems.forEach((item, index) => {
+      item.style.setProperty('--item-index', index);
+    });
+    
+    // Ajout des effets de survol aux cartes
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.zIndex = '10';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.zIndex = '1';
+      });
+    });
+    
+    // Ajout de l'effet de vague aux boutons
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const x = e.clientX - this.getBoundingClientRect().left;
+        const y = e.clientY - this.getBoundingClientRect().top;
+        
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      });
+    });
+    
+    // Ajout de l'effet de fondu aux lignes de documents
+    const documentRows = document.querySelectorAll('tbody tr');
+    documentRows.forEach((row, index) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(10px)';
+      row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      row.style.transitionDelay = `${index * 0.1}s`;
+      
+      setTimeout(() => {
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, 100);
+    });
+  });
+</script>
+{% endblock %}

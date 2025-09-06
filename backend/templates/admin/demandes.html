@@ -1,0 +1,719 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Gestion des Demandes" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Custom gradient */
+  .bg-requests-gradient {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    position: relative;
+  }
+  
+  /* Ensure text is always visible */
+  .bg-requests-gradient h1,
+  .bg-requests-gradient button,
+  .bg-requests-gradient .text-white {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Modal backdrop */
+  .modal-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Animation for modals */
+  .modal-enter {
+    animation: modalEnter 0.3s ease-out;
+  }
+
+  @keyframes modalEnter {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="bg-requests-gradient px-6 py-4 flex justify-between items-center">
+                <h1 class="text-white text-xl font-bold flex items-center">
+                    <i class="bi bi-clipboard-data mr-3 text-2xl"></i>
+                    {% trans "Gestion des Demandes" %}
+                </h1>
+                <div class="flex space-x-3">
+                    <button onclick="exportRequests()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center text-sm font-medium">
+                        <i class="bi bi-download mr-2"></i>
+                        {% trans "Exporter" %}
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
+                <p class="text-sm text-blue-700">
+                    {% trans "Gérez toutes les demandes de services des clients" %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-clipboard-data text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "Total Demandes" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ total_requests|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-hourglass-split text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "En Attente" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ pending_requests|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-gear-wide-connected text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "En Cours" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ in_progress_requests|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-check-circle text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "Terminées" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ completed_requests|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="bi bi-funnel mr-3 text-blue-600"></i>
+                    {% trans "Filtres" %}
+                </h2>
+            </div>
+            <div class="p-6">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Statut" %}</label>
+                        <select id="status" name="status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">{% trans "Tous les statuts" %}</option>
+                            <option value="new" {% if status_filter == 'new' %}selected{% endif %}>{% trans "Nouvelle" %}</option>
+                            <option value="pending_info" {% if status_filter == 'pending_info' %}selected{% endif %}>{% trans "En attente d'info" %}</option>
+                            <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>{% trans "En cours" %}</option>
+                            <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>{% trans "Terminée" %}</option>
+                            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>{% trans "Annulée" %}</option>
+                            <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>{% trans "Rejetée" %}</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Catégorie" %}</label>
+                        <select id="category" name="category" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">{% trans "Toutes les catégories" %}</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="period" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Période" %}</label>
+                        <select id="period" name="period" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">{% trans "Toutes les périodes" %}</option>
+                            <option value="today" {% if period_filter == 'today' %}selected{% endif %}>{% trans "Aujourd'hui" %}</option>
+                            <option value="week" {% if period_filter == 'week' %}selected{% endif %}>{% trans "7 derniers jours" %}</option>
+                            <option value="month" {% if period_filter == 'month' %}selected{% endif %}>{% trans "30 derniers jours" %}</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Recherche" %}</label>
+                        <input type="text" 
+                               id="search" 
+                               name="search" 
+                               value="{{ search_query }}" 
+                               placeholder="{% trans 'Client, Service, Description...' %}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    </div>
+                    
+                    <div class="flex flex-col justify-end space-y-2">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors font-medium flex items-center justify-center">
+                            <i class="bi bi-funnel mr-2"></i>
+                            {% trans "Filtrer" %}
+                        </button>
+                        <a href="{% url 'admin_demandes' %}" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg transition-colors font-medium flex items-center justify-center text-center">
+                            <i class="bi bi-arrow-clockwise mr-2"></i>
+                            {% trans "Réinitialiser" %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">{% trans "Liste des Demandes" %}</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "ID" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Client" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Service" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Date de création" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Statut" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Expert assigné" %}
+                            </th>
+                            <th class="relative px-6 py-3">
+                                <span class="sr-only">{% trans "Actions" %}</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for request in service_requests %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                #{{ request.id }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        {% if request.client.profile_picture %}
+                                            <img class="h-10 w-10 rounded-full object-cover" src="{{ request.client.profile_picture.url }}" alt="">
+                                        {% else %}
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <i class="bi bi-person text-gray-500"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ request.client.first_name }} {{ request.client.name }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ request.client.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ request.service.title }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ request.created_at|date:"d/m/Y H:i" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if request.status == 'new' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{% trans "Nouvelle" %}</span>
+                                {% elif request.status == 'pending_info' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{% trans "En attente d'info" %}</span>
+                                {% elif request.status == 'in_progress' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{% trans "En cours" %}</span>
+                                {% elif request.status == 'completed' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Terminée" %}</span>
+                                {% elif request.status == 'cancelled' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Annulée" %}</span>
+                                {% elif request.status == 'rejected' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Rejetée" %}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {% if request.expert %}
+                                    {{ request.expert.first_name }} {{ request.expert.name }}
+                                {% else %}
+                                    <span class="text-gray-400">{% trans "Non assigné" %}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end space-x-2">
+                                    <button onclick="openRequestDetailModal({{ request.id }})" class="text-blue-600 hover:text-blue-900 transition-colors" title="{% trans 'Voir détails' %}">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button onclick="openAssignModal({{ request.id }})" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="{% trans 'Assigner expert' %}">
+                                        <i class="bi bi-person-check"></i>
+                                    </button>
+                                    <button onclick="openStatusModal({{ request.id }})" class="text-green-600 hover:text-green-900 transition-colors" title="{% trans 'Changer statut' %}">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="bi bi-inbox text-4xl text-gray-300 mb-4"></i>
+                                    <p class="text-lg font-medium text-gray-500">{% trans "Aucune demande trouvée" %}</p>
+                                    <p class="text-sm text-gray-400">{% trans "Essayez de modifier vos critères de recherche." %}</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if service_requests.has_other_pages %}
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow mt-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if service_requests.has_previous %}
+                    <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if period_filter %}period={{ period_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ service_requests.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        {% trans "Précédent" %}
+                    </a>
+                {% else %}
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
+                        {% trans "Précédent" %}
+                    </span>
+                {% endif %}
+                {% if service_requests.has_next %}
+                    <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if period_filter %}period={{ period_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ service_requests.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        {% trans "Suivant" %}
+                    </a>
+                {% else %}
+                    <span class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
+                        {% trans "Suivant" %}
+                    </span>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        {% trans "Affichage de" %}
+                        <span class="font-medium">{{ service_requests.start_index }}</span>
+                        {% trans "à" %}
+                        <span class="font-medium">{{ service_requests.end_index }}</span>
+                        {% trans "sur" %}
+                        <span class="font-medium">{{ service_requests.paginator.count }}</span>
+                        {% trans "résultats" %}
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if service_requests.has_previous %}
+                            <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if period_filter %}period={{ period_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ service_requests.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in service_requests.paginator.page_range %}
+                            {% if service_requests.number == num %}
+                                <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-600 text-sm font-medium text-white">
+                                    {{ num }}
+                                </span>
+                            {% elif num > service_requests.number|add:'-3' and num < service_requests.number|add:'3' %}
+                                <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if period_filter %}period={{ period_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if service_requests.has_next %}
+                            <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if period_filter %}period={{ period_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ service_requests.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Request Detail Modal -->
+<div id="requestDetailModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden modal-enter">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="bi bi-info-circle mr-3"></i>
+                        {% trans "Détails de la demande" %}
+                    </h3>
+                    <button onclick="closeRequestDetailModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <div id="requestDetailContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Expert Modal -->
+<div id="assignExpertModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full modal-enter">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="bi bi-person-check mr-3"></i>
+                        {% trans "Assigner un expert" %}
+                    </h3>
+                    <button onclick="closeAssignExpertModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="assignExpertForm" class="p-6">
+                {% csrf_token %}
+                <input type="hidden" id="assignRequestId" name="request_id">
+                
+                <div class="mb-4">
+                    <label for="expertSelect" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Sélectionner un expert" %}
+                    </label>
+                    <select id="expertSelect" name="expert_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <option value="">{% trans "Choisir un expert..." %}</option>
+                        {% for expert in experts %}
+                        <option value="{{ expert.id }}">{{ expert.first_name }} {{ expert.name }} - {{ expert.specializations.first.name|default:"Expert" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="assignmentNote" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Note d'assignation" %} <span class="text-gray-400">({% trans "optionnel" %})</span>
+                    </label>
+                    <textarea id="assignmentNote" name="note" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="{% trans 'Ajouter une note pour l\'expert...' %}"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeAssignExpertModal()" class="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium">
+                        {% trans "Annuler" %}
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium flex items-center">
+                        <i class="bi bi-check-lg mr-2"></i>
+                        {% trans "Assigner" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div id="updateStatusModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full modal-enter">
+            <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="bi bi-arrow-clockwise mr-3"></i>
+                        {% trans "Changer le statut" %}
+                    </h3>
+                    <button onclick="closeUpdateStatusModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="updateStatusForm" class="p-6">
+                {% csrf_token %}
+                <input type="hidden" id="statusRequestId" name="request_id">
+                
+                <div class="mb-4">
+                    <label for="statusSelect" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Nouveau statut" %}
+                    </label>
+                    <select id="statusSelect" name="status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                        <option value="new">{% trans "Nouvelle" %}</option>
+                        <option value="pending_info">{% trans "En attente d'info" %}</option>
+                        <option value="in_progress">{% trans "En cours" %}</option>
+                        <option value="completed">{% trans "Terminée" %}</option>
+                        <option value="cancelled">{% trans "Annulée" %}</option>
+                        <option value="rejected">{% trans "Rejetée" %}</option>
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="statusNote" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Commentaire" %} <span class="text-gray-400">({% trans "optionnel" %})</span>
+                    </label>
+                    <textarea id="statusNote" name="note" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none" placeholder="{% trans 'Raison du changement de statut...' %}"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeUpdateStatusModal()" class="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium">
+                        {% trans "Annuler" %}
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium flex items-center">
+                        <i class="bi bi-check-lg mr-2"></i>
+                        {% trans "Mettre à jour" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global variables
+let currentRequestId = null;
+
+// Request Detail Modal Functions
+function openRequestDetailModal(requestId) {
+    currentRequestId = requestId;
+    document.getElementById('requestDetailModal').classList.remove('hidden');
+    loadRequestDetails(requestId);
+}
+
+function closeRequestDetailModal() {
+    document.getElementById('requestDetailModal').classList.add('hidden');
+    currentRequestId = null;
+}
+
+function loadRequestDetails(requestId) {
+    const content = document.getElementById('requestDetailContent');
+    content.innerHTML = `
+        <div class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-gray-600">${gettext('Chargement...')}</span>
+        </div>
+    `;
+    
+    // Here you would make an AJAX call to fetch request details
+    // For now, we'll show a placeholder
+    setTimeout(() => {
+        content.innerHTML = `
+            <div class="space-y-6">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-900 mb-2">${gettext('Information de la demande')}</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div><span class="font-medium">${gettext('ID')}:</span> #${requestId}</div>
+                        <div><span class="font-medium">${gettext('Statut')}:</span> <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${gettext('En cours')}</span></div>
+                        <div><span class="font-medium">${gettext('Date de création')}:</span> ${new Date().toLocaleDateString('fr-FR')}</div>
+                        <div><span class="font-medium">${gettext('Dernière mise à jour')}:</span> ${new Date().toLocaleDateString('fr-FR')}</div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-900 mb-2">${gettext('Description')}</h4>
+                    <p class="text-gray-700 text-sm">${gettext('Les détails de la demande seraient affichés ici...')}</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-900 mb-2">${gettext('Documents joints')}</h4>
+                    <p class="text-gray-500 text-sm">${gettext('Aucun document joint')}</p>
+                </div>
+            </div>
+        `;
+    }, 1000);
+}
+
+// Assign Expert Modal Functions
+function openAssignModal(requestId) {
+    currentRequestId = requestId;
+    document.getElementById('assignRequestId').value = requestId;
+    document.getElementById('assignExpertModal').classList.remove('hidden');
+}
+
+function closeAssignExpertModal() {
+    document.getElementById('assignExpertModal').classList.add('hidden');
+    document.getElementById('assignExpertForm').reset();
+    currentRequestId = null;
+}
+
+// Update Status Modal Functions
+function openStatusModal(requestId) {
+    currentRequestId = requestId;
+    document.getElementById('statusRequestId').value = requestId;
+    document.getElementById('updateStatusModal').classList.remove('hidden');
+}
+
+function closeUpdateStatusModal() {
+    document.getElementById('updateStatusModal').classList.add('hidden');
+    document.getElementById('updateStatusForm').reset();
+    currentRequestId = null;
+}
+
+// Form submission handlers
+document.getElementById('assignExpertForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    
+    // Disable submit button and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i>' + gettext('Assignation...');
+    
+    // Here you would make an AJAX call to assign the expert
+    // For now, we'll simulate the process
+    setTimeout(() => {
+        closeAssignExpertModal();
+        showNotification(gettext('Expert assigné avec succès'), 'success');
+        location.reload(); // Reload to show changes
+    }, 1500);
+});
+
+document.getElementById('updateStatusForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    
+    // Disable submit button and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i>' + gettext('Mise à jour...');
+    
+    // Here you would make an AJAX call to update the status
+    // For now, we'll simulate the process
+    setTimeout(() => {
+        closeUpdateStatusModal();
+        showNotification(gettext('Statut mis à jour avec succès'), 'success');
+        location.reload(); // Reload to show changes
+    }, 1500);
+});
+
+// Export function
+function exportRequests() {
+    showNotification(gettext('Export en cours...'), 'info');
+    // Here you would implement the export functionality
+}
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+// Close modals when clicking outside
+document.addEventListener('click', function(e) {
+    const modals = ['requestDetailModal', 'assignExpertModal', 'updateStatusModal'];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal && !modal.classList.contains('hidden')) {
+            const modalContent = modal.querySelector('.bg-white');
+            if (!modalContent.contains(e.target)) {
+                modal.classList.add('hidden');
+                currentRequestId = null;
+            }
+        }
+    });
+});
+
+// Helper function for translations (fallback if Django's gettext is not available)
+function gettext(text) {
+    return typeof django !== 'undefined' && django.gettext ? django.gettext(text) : text;
+}
+</script>
+
+{% endblock %}

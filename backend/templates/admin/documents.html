@@ -1,0 +1,602 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Gestion des Documents" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Custom gradient */
+  .bg-documents-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+
+  /* Modal backdrop */
+  .modal-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Animation for modals */
+  .modal-enter {
+    animation: modalEnter 0.3s ease-out;
+  }
+
+  @keyframes modalEnter {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="bg-documents-gradient px-6 py-4 flex justify-between items-center">
+                <h1 class="text-white text-xl font-bold flex items-center">
+                    <i class="bi bi-file-earmark-text mr-3 text-2xl"></i>
+                    {% trans "Gestion des Documents" %}
+                </h1>
+                <div class="flex space-x-3">
+                    <button onclick="exportDocuments()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center text-sm font-medium">
+                        <i class="bi bi-download mr-2"></i>
+                        {% trans "Exporter" %}
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-3 bg-green-50 border-b border-green-100">
+                <p class="text-sm text-green-700">
+                    {% trans "Gérez tous les documents soumis par les clients" %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-file-earmark text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "Total Documents" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ total_documents|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-file-earmark-check text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "Documents Vérifiés" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ verified_documents|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-hourglass-split text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "En Attente" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ pending_documents|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 hover-lift">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                                <i class="bi bi-file-earmark-x text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">{% trans "Refusés" %}</dt>
+                                <dd class="text-2xl font-bold text-gray-900">{{ rejected_documents|default:0 }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-gray-50 to-green-50 px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="bi bi-funnel mr-3 text-green-600"></i>
+                    {% trans "Filtres" %}
+                </h2>
+            </div>
+            <div class="p-6">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div>
+                        <label for="client" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Client" %}</label>
+                        <select id="client" name="client" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                            <option value="">{% trans "Tous les clients" %}</option>
+                            {% for client in clients %}
+                            <option value="{{ client.id }}" {% if client_id|stringformat:"s" == client.id|stringformat:"s" %}selected{% endif %}>
+                                {{ client.user.first_name }} {{ client.user.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="document-type" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Type de document" %}</label>
+                        <select id="document-type" name="type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                            <option value="">{% trans "Tous les types" %}</option>
+                            {% for type in document_types %}
+                            <option value="{{ type }}" {% if document_type == type %}selected{% endif %}>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Statut" %}</label>
+                        <select id="status" name="status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                            <option value="">{% trans "Tous les statuts" %}</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>{% trans "En attente" %}</option>
+                            <option value="verified" {% if status_filter == 'verified' %}selected{% endif %}>{% trans "Vérifié" %}</option>
+                            <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>{% trans "Refusé" %}</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Recherche" %}</label>
+                        <input type="text" 
+                               id="search" 
+                               name="search" 
+                               value="{{ search_query }}" 
+                               placeholder="{% trans 'Nom du document, client...' %}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                    </div>
+                    
+                    <div class="flex flex-col justify-end space-y-2">
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors font-medium flex items-center justify-center">
+                            <i class="bi bi-funnel mr-2"></i>
+                            {% trans "Filtrer" %}
+                        </button>
+                        <a href="{% url 'custom_requests:admin_documents' %}" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg transition-colors font-medium flex items-center justify-center text-center">
+                            <i class="bi bi-arrow-clockwise mr-2"></i>
+                            {% trans "Réinitialiser" %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Documents Table -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">{% trans "Liste des Documents" %}</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Document" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Client" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Demande" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Type" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Date d'ajout" %}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Statut" %}
+                            </th>
+                            <th class="relative px-6 py-3">
+                                <span class="sr-only">{% trans "Actions" %}</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for doc in documents %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                            <i class="bi bi-file-earmark-text text-blue-600"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ doc.name }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ doc.file.size|filesizeformat }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        {% if doc.uploaded_by.profile_picture %}
+                                            <img class="h-8 w-8 rounded-full object-cover" src="{{ doc.uploaded_by.profile_picture.url }}" alt="">
+                                        {% else %}
+                                            <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <i class="bi bi-person text-gray-500 text-sm"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ doc.uploaded_by.first_name }} {{ doc.uploaded_by.name }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ doc.uploaded_by.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {% if doc.service_request %}
+                                    {{ doc.service_request.service.title }}
+                                {% else %}
+                                    <span class="text-gray-400">{% trans "N/A" %}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ doc.get_type_display }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ doc.upload_date|date:"d/m/Y H:i" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if doc.status == 'verified' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="bi bi-check-circle mr-1"></i>
+                                        {% trans "Vérifié" %}
+                                    </span>
+                                {% elif doc.status == 'rejected' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="bi bi-x-circle mr-1"></i>
+                                        {% trans "Refusé" %}
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <i class="bi bi-clock mr-1"></i>
+                                        {% trans "En attente" %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end space-x-2">
+                                    <a href="{{ doc.file.url }}" target="_blank" class="text-blue-600 hover:text-blue-900 transition-colors" title="{% trans 'Voir le document' %}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if doc.status != 'verified' %}
+                                    <a href="{% url 'custom_requests:admin_verify_document' doc.id %}" class="text-green-600 hover:text-green-900 transition-colors" title="{% trans 'Vérifier' %}">
+                                        <i class="bi bi-check-circle"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if doc.status != 'rejected' %}
+                                    <button onclick="openRejectModal({{ doc.id }}, '{{ doc.name|escapejs }}')" class="text-red-600 hover:text-red-900 transition-colors" title="{% trans 'Refuser' %}">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button onclick="deleteDocument({{ doc.id }}, '{{ doc.name|escapejs }}')" class="text-red-600 hover:text-red-900 transition-colors" title="{% trans 'Supprimer' %}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="bi bi-inbox text-4xl text-gray-300 mb-4"></i>
+                                    <p class="text-lg font-medium text-gray-500">{% trans "Aucun document trouvé" %}</p>
+                                    <p class="text-sm text-gray-400">{% trans "Essayez de modifier vos critères de recherche." %}</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if documents.has_other_pages %}
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow mt-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if documents.has_previous %}
+                    <a href="?{% if client_id %}client={{ client_id }}&{% endif %}{% if document_type %}type={{ document_type }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ documents.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        {% trans "Précédent" %}
+                    </a>
+                {% else %}
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
+                        {% trans "Précédent" %}
+                    </span>
+                {% endif %}
+                {% if documents.has_next %}
+                    <a href="?{% if client_id %}client={{ client_id }}&{% endif %}{% if document_type %}type={{ document_type }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ documents.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        {% trans "Suivant" %}
+                    </a>
+                {% else %}
+                    <span class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
+                        {% trans "Suivant" %}
+                    </span>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        {% trans "Affichage de" %}
+                        <span class="font-medium">{{ documents.start_index }}</span>
+                        {% trans "à" %}
+                        <span class="font-medium">{{ documents.end_index }}</span>
+                        {% trans "sur" %}
+                        <span class="font-medium">{{ documents.paginator.count }}</span>
+                        {% trans "résultats" %}
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if documents.has_previous %}
+                            <a href="?{% if client_id %}client={{ client_id }}&{% endif %}{% if document_type %}type={{ document_type }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ documents.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in documents.paginator.page_range %}
+                            {% if documents.number == num %}
+                                <span class="relative inline-flex items-center px-4 py-2 border border-green-500 bg-green-600 text-sm font-medium text-white">
+                                    {{ num }}
+                                </span>
+                            {% elif num > documents.number|add:'-3' and num < documents.number|add:'3' %}
+                                <a href="?{% if client_id %}client={{ client_id }}&{% endif %}{% if document_type %}type={{ document_type }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if documents.has_next %}
+                            <a href="?{% if client_id %}client={{ client_id }}&{% endif %}{% if document_type %}type={{ document_type }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if search_query %}search={{ search_query }}&{% endif %}page={{ documents.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reject Document Modal -->
+<div id="rejectDocumentModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full modal-enter">
+            <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="bi bi-x-circle mr-3"></i>
+                        {% trans "Refuser le Document" %}
+                    </h3>
+                    <button onclick="closeRejectModal()" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="rejectDocumentForm" class="p-6">
+                {% csrf_token %}
+                <input type="hidden" id="rejectDocumentId" name="document_id">
+                
+                <div class="mb-6">
+                    <p class="text-gray-700 mb-4">
+                        {% trans "Vous êtes sur le point de refuser le document" %} "<span id="rejectDocumentName" class="font-semibold"></span>".
+                    </p>
+                    
+                    <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Raison du refus" %} <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="rejection_reason" 
+                              name="rejection_reason" 
+                              rows="4" 
+                              required
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-none" 
+                              placeholder="{% trans 'Expliquez pourquoi ce document est refusé...' %}"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeRejectModal()" class="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium">
+                        {% trans "Annuler" %}
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium flex items-center">
+                        <i class="bi bi-x-circle mr-2"></i>
+                        {% trans "Refuser le Document" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global variables
+let currentDocumentId = null;
+
+// Reject Modal Functions
+function openRejectModal(documentId, documentName) {
+    currentDocumentId = documentId;
+    document.getElementById('rejectDocumentId').value = documentId;
+    document.getElementById('rejectDocumentName').textContent = documentName;
+    document.getElementById('rejectDocumentModal').classList.remove('hidden');
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectDocumentModal').classList.add('hidden');
+    document.getElementById('rejectDocumentForm').reset();
+    currentDocumentId = null;
+}
+
+// Delete Document Function
+function deleteDocument(documentId, documentName) {
+    if (confirm(`${gettext('Êtes-vous sûr de vouloir supprimer le document')} "${documentName}" ?`)) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/custom_requests/admin/documents/delete/${documentId}/`;
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Form submission handler for reject modal
+document.getElementById('rejectDocumentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const documentId = currentDocumentId;
+    
+    // Disable submit button and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i>' + gettext('Refus en cours...');
+    
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/custom_requests/admin/documents/reject/${documentId}/`;
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Add rejection reason
+    const reasonInput = document.createElement('input');
+    reasonInput.type = 'hidden';
+    reasonInput.name = 'rejection_reason';
+    reasonInput.value = formData.get('rejection_reason');
+    form.appendChild(reasonInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+});
+
+// Export function
+function exportDocuments() {
+    showNotification(gettext('Export en cours...'), 'info');
+    // Here you would implement the export functionality
+}
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('rejectDocumentModal');
+    if (modal && !modal.classList.contains('hidden')) {
+        const modalContent = modal.querySelector('.bg-white');
+        if (!modalContent.contains(e.target)) {
+            closeRejectModal();
+        }
+    }
+});
+
+// Helper function for translations (fallback if Django's gettext is not available)
+function gettext(text) {
+    return typeof django !== 'undefined' && django.gettext ? django.gettext(text) : text;
+}
+</script>
+
+{% endblock %}

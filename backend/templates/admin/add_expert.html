@@ -1,0 +1,606 @@
+{% extends 'admin/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Ajouter un Expert" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Custom gradient */
+  .bg-expert-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  }
+
+  /* Form focus states */
+  .form-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  /* Animation for success */
+  @keyframes slideInFromTop {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .slide-in {
+    animation: slideInFromTop 0.5s ease-out;
+  }
+
+  /* Custom hover effects */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="bg-expert-gradient px-6 py-4 flex justify-between items-center">
+                <h1 class="text-white text-xl font-bold flex items-center">
+                    <i class="bi bi-person-plus mr-3 text-2xl"></i>
+                    {% trans "Ajouter un Expert" %}
+                </h1>
+                <a href="{% url 'admin_users' %}" 
+                   class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center text-sm font-medium">
+                    <i class="bi bi-arrow-left mr-2"></i>
+                    {% trans "Retour aux utilisateurs" %}
+                </a>
+            </div>
+            <div class="px-6 py-3 bg-indigo-50 border-b border-indigo-100">
+                <p class="text-sm text-indigo-700">
+                    {% trans "Créer un nouveau compte expert pour votre équipe professionnelle" %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="message-container"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Form -->
+            <div class="lg:col-span-2">
+                <form id="expertForm" action="{% url 'admin_create_expert' %}" method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_type" value="expert">
+
+                    <!-- Personal Information -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden hover-lift">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-person-lines-fill mr-3 text-blue-600"></i>
+                                {% trans "Informations Personnelles" %}
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Prénom" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           id="first_name" 
+                                           name="first_name" 
+                                           required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="{% trans 'Entrez le prénom' %}">
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+                                
+                                <div>
+                                    <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Nom de famille" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           id="last_name" 
+                                           name="last_name" 
+                                           required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="{% trans 'Entrez le nom de famille' %}">
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Adresse email" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" 
+                                           id="email" 
+                                           name="email" 
+                                           required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="{% trans 'expert@example.com' %}">
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+
+                                <div>
+                                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Numéro de téléphone" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="tel" 
+                                           id="phone" 
+                                           name="phone" 
+                                           required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="{% trans '+212 6 00 00 00 00' %}">
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Information -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden hover-lift">
+                        <div class="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-lock-fill mr-3 text-red-600"></i>
+                                {% trans "Informations de Sécurité" %}
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Mot de passe" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="password" 
+                                           id="password" 
+                                           name="password" 
+                                           required 
+                                           minlength="8"
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="{% trans 'Minimum 8 caractères' %}">
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+
+                                <div>
+                                    <label for="password_confirm" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Confirmer le mot de passe" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="password" 
+                                           id="password_confirm" 
+                                           name="password_confirm" 
+                                           required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="{% trans 'Répétez le mot de passe' %}">
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden hover-lift">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-briefcase-fill mr-3 text-green-600"></i>
+                                {% trans "Informations Professionnelles" %}
+                            </h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="expertise" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Domaine d'expertise" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <select id="expertise" 
+                                            name="expertise" 
+                                            required
+                                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                        <option value="" disabled selected>{% trans "Sélectionnez un domaine" %}</option>
+                                        <option value="fiscal">{% trans "Fiscal" %}</option>
+                                        <option value="immobilier">{% trans "Immobilier" %}</option>
+                                        <option value="investissement">{% trans "Investissement" %}</option>
+                                        <option value="administratif">{% trans "Administratif" %}</option>
+                                        <option value="tourisme">{% trans "Tourisme" %}</option>
+                                        <option value="autre">{% trans "Autre" %}</option>
+                                    </select>
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+
+                                <div>
+                                    <label for="experience" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {% trans "Années d'expérience" %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" 
+                                           id="experience" 
+                                           name="experience" 
+                                           min="0" 
+                                           max="50"
+                                           required
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                           placeholder="{% trans 'Nombre d\'années' %}">
+                                    <div class="error-message text-red-600 text-sm mt-1 hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                            <a href="{% url 'admin_users' %}" 
+                               class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center font-medium">
+                                <i class="bi bi-x-circle mr-2"></i>
+                                {% trans "Annuler" %}
+                            </a>
+                            <button type="submit" 
+                                    id="submit-btn"
+                                    class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center">
+                                <i class="bi bi-person-plus mr-2"></i>
+                                {% trans "Créer Expert" %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Information Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="space-y-6">
+                    <!-- Expert Role Information -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden hover-lift">
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-info-circle-fill mr-3 text-purple-600"></i>
+                                {% trans "Informations" %}
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                    <i class="bi bi-person-workspace mr-2 text-indigo-600"></i>
+                                    {% trans "Rôle de l'expert" %}
+                                </h4>
+                                <p class="text-sm text-gray-600">
+                                    {% trans "L'expert pourra gérer les demandes de services, planifier des rendez-vous et communiquer avec les clients." %}
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                    <i class="bi bi-key-fill mr-2 text-green-600"></i>
+                                    {% trans "Accès au système" %}
+                                </h4>
+                                <p class="text-sm text-gray-600">
+                                    {% trans "L'expert recevra un email avec ses identifiants de connexion pour accéder à son espace de travail." %}
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                    <i class="bi bi-list-check mr-2 text-blue-600"></i>
+                                    {% trans "Domaines disponibles" %}
+                                </h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li class="flex items-center">
+                                        <i class="bi bi-check-circle-fill text-green-500 mr-2 text-xs"></i>
+                                        {% trans "Fiscal" %}
+                                    </li>
+                                    <li class="flex items-center">
+                                        <i class="bi bi-check-circle-fill text-green-500 mr-2 text-xs"></i>
+                                        {% trans "Immobilier" %}
+                                    </li>
+                                    <li class="flex items-center">
+                                        <i class="bi bi-check-circle-fill text-green-500 mr-2 text-xs"></i>
+                                        {% trans "Investissement" %}
+                                    </li>
+                                    <li class="flex items-center">
+                                        <i class="bi bi-check-circle-fill text-green-500 mr-2 text-xs"></i>
+                                        {% trans "Administratif" %}
+                                    </li>
+                                    <li class="flex items-center">
+                                        <i class="bi bi-check-circle-fill text-green-500 mr-2 text-xs"></i>
+                                        {% trans "Tourisme" %}
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <i class="bi bi-lightbulb-fill text-amber-600 mr-3 mt-0.5"></i>
+                                    <div>
+                                        <h5 class="font-semibold text-amber-800 mb-1">{% trans "Conseil" %}</h5>
+                                        <p class="text-sm text-amber-700">
+                                            {% trans "Assurez-vous que l'expert dispose d'une adresse email valide pour recevoir ses identifiants de connexion." %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Indicator -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden hover-lift">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-clipboard-check-fill mr-3 text-green-600"></i>
+                                {% trans "Étapes de création" %}
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-3">
+                                <div class="flex items-center text-sm">
+                                    <div class="w-6 h-6 rounded-full bg-indigo-100 border-2 border-indigo-600 flex items-center justify-center mr-3">
+                                        <span class="text-indigo-600 font-bold text-xs">1</span>
+                                    </div>
+                                    <span class="text-gray-700">{% trans "Remplir les informations" %}</span>
+                                </div>
+                                <div class="flex items-center text-sm">
+                                    <div class="w-6 h-6 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center mr-3">
+                                        <span class="text-gray-500 font-bold text-xs">2</span>
+                                    </div>
+                                    <span class="text-gray-500">{% trans "Validation automatique" %}</span>
+                                </div>
+                                <div class="flex items-center text-sm">
+                                    <div class="w-6 h-6 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center mr-3">
+                                        <span class="text-gray-500 font-bold text-xs">3</span>
+                                    </div>
+                                    <span class="text-gray-500">{% trans "Envoi email de confirmation" %}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('expertForm');
+    const submitBtn = document.getElementById('submit-btn');
+    const messageContainer = document.getElementById('message-container');
+    
+    // Form validation
+    const fields = {
+        first_name: document.getElementById('first_name'),
+        last_name: document.getElementById('last_name'),
+        email: document.getElementById('email'),
+        phone: document.getElementById('phone'),
+        password: document.getElementById('password'),
+        password_confirm: document.getElementById('password_confirm'),
+        expertise: document.getElementById('expertise'),
+        experience: document.getElementById('experience')
+    };
+
+    // Real-time validation
+    Object.keys(fields).forEach(fieldName => {
+        const field = fields[fieldName];
+        if (field) {
+            field.addEventListener('blur', () => validateField(fieldName));
+            field.addEventListener('input', () => clearFieldError(fieldName));
+        } else {
+            console.warn(`Field ${fieldName} not found in DOM`);
+        }
+    });
+
+    // Password confirmation validation
+    function validatePasswords() {
+        if (!fields.password || !fields.password_confirm) {
+            console.warn('Password fields not found');
+            return true;
+        }
+        
+        const password = fields.password.value;
+        const confirmPassword = fields.password_confirm.value;
+        
+        if (password && confirmPassword && password !== confirmPassword) {
+            showFieldError('password_confirm', '{% trans "Les mots de passe ne correspondent pas" %}');
+            return false;
+        } else {
+            clearFieldError('password_confirm');
+            return true;
+        }
+    }
+
+    if (fields.password && fields.password_confirm) {
+        fields.password.addEventListener('input', validatePasswords);
+        fields.password_confirm.addEventListener('input', validatePasswords);
+    }
+
+    // Individual field validation
+    function validateField(fieldName) {
+        const field = fields[fieldName];
+        if (!field) {
+            console.warn(`Field ${fieldName} not found for validation`);
+            return true; // Skip validation if field doesn't exist
+        }
+        
+        const value = field.value.trim();
+        
+        // Clear previous errors
+        clearFieldError(fieldName);
+        
+        // Required field validation
+        if (!value && field.hasAttribute('required')) {
+            showFieldError(fieldName, '{% trans "Ce champ est obligatoire" %}');
+            return false;
+        }
+        
+        // Specific validations
+        switch(fieldName) {
+            case 'email':
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (value && !emailRegex.test(value)) {
+                    showFieldError(fieldName, '{% trans "Veuillez entrer une adresse email valide" %}');
+                    return false;
+                }
+                break;
+            case 'password':
+                if (value && value.length < 8) {
+                    showFieldError(fieldName, '{% trans "Le mot de passe doit contenir au moins 8 caractères" %}');
+                    return false;
+                }
+                break;
+            case 'phone':
+                const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/;
+                if (value && !phoneRegex.test(value)) {
+                    showFieldError(fieldName, '{% trans "Veuillez entrer un numéro de téléphone valide" %}');
+                    return false;
+                }
+                break;
+            case 'experience':
+                if (value && (parseInt(value) < 0 || parseInt(value) > 50)) {
+                    showFieldError(fieldName, '{% trans "L\'expérience doit être entre 0 et 50 ans" %}');
+                    return false;
+                }
+                break;
+        }
+        
+        return true;
+    }
+
+    function showFieldError(fieldName, message) {
+        const field = fields[fieldName];
+        if (!field) return;
+        
+        const errorDiv = field.parentNode.querySelector('.error-message');
+        
+        field.classList.add('border-red-500');
+        field.classList.remove('border-gray-300');
+        
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    }
+
+    function clearFieldError(fieldName) {
+        const field = fields[fieldName];
+        if (!field) return;
+        
+        const errorDiv = field.parentNode.querySelector('.error-message');
+        
+        field.classList.remove('border-red-500');
+        field.classList.add('border-gray-300');
+        
+        if (errorDiv) {
+            errorDiv.classList.add('hidden');
+        }
+    }
+
+    function showMessage(message, type = 'success') {
+        const alertClass = type === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200';
+        const iconClass = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+        
+        messageContainer.innerHTML = `
+            <div class="mb-4 rounded-lg p-4 ${alertClass} border slide-in">
+                <div class="flex items-center">
+                    <i class="bi ${iconClass} mr-3"></i>
+                    <span class="font-medium">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-gray-400 hover:text-gray-600">
+                        <i class="bi bi-x text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        console.log('Form submit event triggered');
+        
+        // TEMPORARILY DISABLE AJAX - Let the form submit normally for testing
+        console.log('Allowing normal form submission for testing');
+        return true; // Allow normal form submission
+        
+        e.preventDefault();
+        console.log('Form submission prevented');
+        
+        // Validate all fields
+        let isValid = true;
+        Object.keys(fields).forEach(fieldName => {
+            if (!validateField(fieldName)) {
+                isValid = false;
+            }
+        });
+        
+        // Validate password confirmation
+        if (!validatePasswords()) {
+            isValid = false;
+        }
+        
+        console.log('Form validation result:', isValid);
+        
+        if (!isValid) {
+            showMessage('{% trans "Veuillez corriger les erreurs avant de continuer" %}', 'error');
+            return;
+        }
+        
+        console.log('Starting AJAX submission');
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {% trans "Création en cours..." %}
+        `;
+        
+        // Submit form via AJAX
+        const formData = new FormData(form);
+        
+        console.log('Form data prepared, sending fetch request');
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            console.log('Fetch response received:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('JSON data received:', data);
+            if (data.success) {
+                showMessage('{% trans "Expert créé avec succès! Redirection en cours..." %}', 'success');
+                setTimeout(() => {
+                    window.location.href = "{% url 'admin_users' %}";
+                }, 2000);
+            } else {
+                showMessage(data.message || '{% trans "Une erreur est survenue" %}', 'error');
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <i class="bi bi-person-plus mr-2"></i>
+                    {% trans "Créer Expert" %}
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showMessage('{% trans "Une erreur réseau est survenue" %}', 'error');
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `
+                <i class="bi bi-person-plus mr-2"></i>
+                {% trans "Créer Expert" %}
+            `;
+        });
+    });
+});
+</script>
+{% endblock %}

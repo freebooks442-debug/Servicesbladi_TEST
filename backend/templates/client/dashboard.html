@@ -1,0 +1,223 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Welcome Header -->
+  <div class="bg-gradient-to-r from-primary to-secondary rounded-lg text-white p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold mb-2">Bienvenue, {{ user.first_name|default:user.name|default:"Utilisateur" }} !</h1>
+        <p class="text-white/90">Gérez vos services MRE depuis votre tableau de bord</p>
+      </div>
+      <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
+        <button onclick="openNewRequestModal()" class="btn-secondary flex items-center gap-2">
+          <i class="bi bi-plus-circle"></i>
+          <span>Nouvelle Demande</span>
+        </button>
+        <a href="{% url 'client_rendezvous' %}" class="bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 inline-flex items-center gap-2">
+          <i class="bi bi-calendar-plus"></i>
+          <span>Nouveau RDV</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-green-600">{{ completed_requests|default:0 }}</div>
+      <div class="text-sm text-gray-600">Services Terminés</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-blue-600">{{ active_requests|default:0 }}</div>
+      <div class="text-sm text-gray-600">En Cours</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-purple-600">{{ upcoming_appointments|length|default:0 }}</div>
+      <div class="text-sm text-gray-600">Rendez-vous</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-4 text-center">
+      <div class="text-2xl font-bold text-orange-600">{{ documents_count|default:0 }}</div>
+      <div class="text-sm text-gray-600">Documents</div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-lg font-semibold mb-4">Actions Rapides</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <button onclick="redirectToCreateRequest('administrative')" class="p-4 border-2 border-dashed border-gray-300 hover:border-primary rounded-lg text-center group">
+        <i class="bi bi-file-earmark-text text-2xl text-gray-400 group-hover:text-primary mb-2"></i>
+        <p class="text-sm text-gray-600 group-hover:text-primary">Demande Administrative</p>
+      </button>
+      
+      <a href="{% url 'client_rendezvous' %}" class="p-4 border-2 border-dashed border-gray-300 hover:border-secondary rounded-lg text-center group">
+        <i class="bi bi-calendar-plus text-2xl text-gray-400 group-hover:text-secondary mb-2"></i>
+        <p class="text-sm text-gray-600 group-hover:text-secondary">Planifier RDV</p>
+      </a>
+      
+      <a href="{% url 'client_documents' %}" class="p-4 border-2 border-dashed border-gray-300 hover:border-green-500 rounded-lg text-center group">
+        <i class="bi bi-cloud-upload text-2xl text-gray-400 group-hover:text-green-500 mb-2"></i>
+        <p class="text-sm text-gray-600 group-hover:text-green-500">Ajouter Document</p>
+      </a>
+      
+      <a href="{% url 'client_messages' %}" class="p-4 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg text-center group">
+        <i class="bi bi-chat-dots text-2xl text-gray-400 group-hover:text-blue-500 mb-2"></i>
+        <p class="text-sm text-gray-600 group-hover:text-blue-500">Nouveau Message</p>
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Requests -->
+  <div class="bg-white rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Mes Demandes Récentes</h3>
+        <a href="{% url 'client_demandes' %}" class="text-primary hover:text-primary/80 text-sm">
+          Voir tout →
+        </a>
+      </div>
+    </div>
+    <div class="p-6">
+      {% if recent_requests %}
+        <div class="space-y-3">
+          {% for request in recent_requests %}
+            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div>
+                <h4 class="font-medium">{{ request.title }}</h4>
+                <p class="text-sm text-gray-500">{{ request.updated_at|date:"d/m/Y" }}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="px-2 py-1 text-xs font-medium rounded-full
+                  {% if request.status == 'new' %}bg-yellow-100 text-yellow-800
+                  {% elif request.status == 'in_progress' %}bg-blue-100 text-blue-800
+                  {% elif request.status == 'completed' %}bg-green-100 text-green-800
+                  {% else %}bg-gray-100 text-gray-800{% endif %}">
+                  {% if request.status == 'new' %}Nouveau
+                  {% elif request.status == 'in_progress' %}En Cours
+                  {% elif request.status == 'completed' %}Terminé
+                  {% else %}{{ request.get_status_display }}{% endif %}
+                </span>
+                <a href="/requests/client/detail/{{ request.id }}/" class="text-primary hover:text-primary/80">
+                  <i class="bi bi-arrow-right-circle"></i>
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-8">
+          <i class="bi bi-file-earmark-text text-4xl text-gray-300 mb-3"></i>
+          <h4 class="font-medium text-gray-900 mb-2">Aucune demande</h4>
+          <p class="text-gray-500 text-sm mb-4">Commencez par créer votre première demande de service.</p>
+          <button onclick="openNewRequestModal()" class="btn-primary">
+            <i class="bi bi-plus-circle mr-2"></i>
+            Créer une demande
+          </button>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Upcoming Appointments -->
+  {% if upcoming_appointments %}
+  <div class="bg-white rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Prochains Rendez-vous</h3>
+        <a href="{% url 'client_rendezvous' %}" class="text-secondary hover:text-secondary/80 text-sm">
+          Voir tout →
+        </a>
+      </div>
+    </div>
+    <div class="p-6">
+      <div class="space-y-3">
+        {% for appointment in upcoming_appointments %}
+          <div class="flex items-center gap-4 p-3 border border-gray-200 rounded-lg">
+            <div class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+              <i class="bi bi-calendar-event text-secondary"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-medium">{{ appointment.consultation_type|title }}</h4>
+              <p class="text-sm text-gray-500">{{ appointment.date_time|date:"d/m/Y H:i" }}</p>
+              {% if appointment.expert %}
+                <p class="text-xs text-gray-400">avec {{ appointment.expert.name }} {{ appointment.expert.first_name }}</p>
+              {% endif %}
+            </div>
+            <a href="/requests/appointments/detail/{{ appointment.id }}/" class="text-secondary hover:text-secondary/80">
+              <i class="bi bi-arrow-right-circle"></i>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- New Request Modal -->
+<div id="newRequestModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Nouvelle Demande de Service</h3>
+        <button onclick="closeNewRequestModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="bi bi-x text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="redirectToCreateRequest('administrative')" class="p-3 border-2 border-gray-200 hover:border-primary rounded-lg text-center">
+          <i class="bi bi-file-earmark-text text-xl text-primary mb-1"></i>
+          <p class="text-xs font-medium">Administratif</p>
+        </button>
+        
+        <button onclick="redirectToCreateRequest('tourisme')" class="p-3 border-2 border-gray-200 hover:border-primary rounded-lg text-center">
+          <i class="bi bi-airplane text-xl text-primary mb-1"></i>
+          <p class="text-xs font-medium">Tourisme</p>
+        </button>
+        
+        <button onclick="redirectToCreateRequest('immobilier')" class="p-3 border-2 border-gray-200 hover:border-primary rounded-lg text-center">
+          <i class="bi bi-house-door text-xl text-primary mb-1"></i>
+          <p class="text-xs font-medium">Immobilier</p>
+        </button>
+        
+        <button onclick="redirectToCreateRequest('fiscal')" class="p-3 border-2 border-gray-200 hover:border-primary rounded-lg text-center">
+          <i class="bi bi-calculator text-xl text-primary mb-1"></i>
+          <p class="text-xs font-medium">Fiscale</p>
+        </button>
+        
+        <button onclick="redirectToCreateRequest('investissement')" class="p-3 border-2 border-gray-200 hover:border-primary rounded-lg text-center col-span-2">
+          <i class="bi bi-graph-up text-xl text-primary mb-1"></i>
+          <p class="text-xs font-medium">Investissement</p>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openNewRequestModal() {
+  document.getElementById('newRequestModal').classList.remove('hidden');
+}
+
+function closeNewRequestModal() {
+  document.getElementById('newRequestModal').classList.add('hidden');
+}
+
+function redirectToCreateRequest(serviceType) {
+  window.location.href = `/requests/client/create/${serviceType}/`;
+}
+
+// Close modal when clicking outside
+document.getElementById('newRequestModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeNewRequestModal();
+  }
+});
+</script>
+{% endblock %}

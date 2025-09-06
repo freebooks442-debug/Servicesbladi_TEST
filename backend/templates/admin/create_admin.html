@@ -1,0 +1,355 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Créer un administrateur" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Custom gradient */
+  .bg-admin-gradient {
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+  }
+
+  /* Form focus effects */
+  .form-input:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.1);
+  }
+
+  /* Button hover effects */
+  .btn-hover {
+    transition: all 0.3s ease;
+  }
+
+  .btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="bg-admin-gradient px-6 py-4">
+                <h1 class="text-white text-xl font-bold flex items-center">
+                    <i class="bi bi-person-plus mr-3 text-2xl"></i>
+                    {% trans "Créer un nouvel administrateur" %}
+                </h1>
+            </div>
+            <div class="px-6 py-3 bg-purple-50 border-b border-purple-100">
+                <p class="text-sm text-purple-700">
+                    {% trans "Ajoutez un nouvel administrateur au système" %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6">
+                <!-- Messages -->
+                {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                    <div class="rounded-lg p-4 mb-4 {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700{% elif message.tags == 'warning' %}bg-yellow-50 border border-yellow-200 text-yellow-700{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-700{% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %}">
+                        <div class="flex items-center">
+                            {% if message.tags == 'error' %}
+                                <i class="bi bi-exclamation-triangle-fill mr-3"></i>
+                            {% elif message.tags == 'warning' %}
+                                <i class="bi bi-exclamation-triangle-fill mr-3"></i>
+                            {% elif message.tags == 'success' %}
+                                <i class="bi bi-check-circle-fill mr-3"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill mr-3"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Form -->
+                <form method="post" action="{% url 'create_admin' %}" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% trans "Adresse email" %} <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="bi bi-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   required
+                                   class="form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                   placeholder="{% trans 'exemple@servicesbladi.com' %}">
+                        </div>
+                    </div>
+
+                    <!-- Name fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Nom de famille" %}
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="bi bi-person text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       id="name" 
+                                       name="name"
+                                       class="form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                       placeholder="{% trans 'Nom' %}">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Prénom" %}
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="bi bi-person text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       id="first_name" 
+                                       name="first_name"
+                                       class="form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                       placeholder="{% trans 'Prénom' %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Mot de passe" %} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="bi bi-lock text-gray-400"></i>
+                                </div>
+                                <input type="password" 
+                                       id="password" 
+                                       name="password" 
+                                       required
+                                       minlength="8"
+                                       class="form-input w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                       placeholder="{% trans 'Minimum 8 caractères' %}">
+                                <button type="button" 
+                                        onclick="togglePassword('password')"
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i id="password-toggle" class="bi bi-eye text-gray-400 hover:text-gray-600"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-2">
+                                {% trans "Confirmer le mot de passe" %} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="bi bi-lock text-gray-400"></i>
+                                </div>
+                                <input type="password" 
+                                       id="confirm_password" 
+                                       name="confirm_password" 
+                                       required
+                                       class="form-input w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                       placeholder="{% trans 'Confirmer le mot de passe' %}">
+                                <button type="button" 
+                                        onclick="togglePassword('confirm_password')"
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i id="confirm_password-toggle" class="bi bi-eye text-gray-400 hover:text-gray-600"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password strength indicator -->
+                    <div id="password-strength" class="hidden">
+                        <div class="text-sm text-gray-600 mb-2">{% trans "Force du mot de passe" %}:</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="strength-bar" class="h-2 rounded-full transition-all duration-300"></div>
+                        </div>
+                        <div id="strength-text" class="text-xs mt-1"></div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
+                        <a href="{% url 'admin_users' %}" 
+                           class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 btn-hover font-medium">
+                            <i class="bi bi-arrow-left mr-2"></i>
+                            {% trans "Retour" %}
+                        </a>
+                        
+                        <button type="submit" 
+                                class="inline-flex items-center justify-center px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-200 btn-hover font-medium">
+                            <i class="bi bi-plus-circle mr-2"></i>
+                            {% trans "Créer l'administrateur" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Password visibility toggle
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const toggle = document.getElementById(fieldId + '-toggle');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        toggle.className = 'bi bi-eye-slash text-gray-400 hover:text-gray-600';
+    } else {
+        field.type = 'password';
+        toggle.className = 'bi bi-eye text-gray-400 hover:text-gray-600';
+    }
+}
+
+// Password strength checker
+function checkPasswordStrength(password) {
+    let strength = 0;
+    let feedback = [];
+    
+    if (password.length >= 8) strength += 1;
+    else feedback.push('Au moins 8 caractères');
+    
+    if (password.match(/[a-z]/)) strength += 1;
+    else feedback.push('Une lettre minuscule');
+    
+    if (password.match(/[A-Z]/)) strength += 1;
+    else feedback.push('Une lettre majuscule');
+    
+    if (password.match(/[0-9]/)) strength += 1;
+    else feedback.push('Un chiffre');
+    
+    if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+    else feedback.push('Un caractère spécial');
+    
+    return { strength, feedback };
+}
+
+// Form validation and password strength
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const passwordField = document.getElementById('password');
+    const confirmPasswordField = document.getElementById('confirm_password');
+    const strengthIndicator = document.getElementById('password-strength');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthText = document.getElementById('strength-text');
+    
+    // Show/hide password strength indicator
+    passwordField.addEventListener('focus', function() {
+        strengthIndicator.classList.remove('hidden');
+    });
+    
+    // Check password strength
+    passwordField.addEventListener('input', function() {
+        const password = this.value;
+        const { strength, feedback } = checkPasswordStrength(password);
+        
+        // Update strength bar
+        const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
+        const labels = ['Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort'];
+        
+        strengthBar.className = `h-2 rounded-full transition-all duration-300 ${colors[strength] || 'bg-gray-300'}`;
+        strengthBar.style.width = `${(strength / 5) * 100}%`;
+        
+        if (password.length > 0) {
+            strengthText.textContent = labels[strength] || 'Très faible';
+            if (feedback.length > 0) {
+                strengthText.textContent += ` - Manque: ${feedback.join(', ')}`;
+            }
+        } else {
+            strengthText.textContent = '';
+        }
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(event) {
+        const password = passwordField.value;
+        const confirmPassword = confirmPasswordField.value;
+        
+        if (password !== confirmPassword) {
+            event.preventDefault();
+            
+            // Show error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'rounded-lg p-4 mb-4 bg-red-50 border border-red-200 text-red-700';
+            errorDiv.innerHTML = '<div class="flex items-center"><i class="bi bi-exclamation-triangle-fill mr-3"></i>Les mots de passe ne correspondent pas.</div>';
+            
+            // Remove any existing error messages
+            const existingError = form.querySelector('.bg-red-50');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Insert error message at the top of the form
+            form.insertBefore(errorDiv, form.firstChild);
+            
+            // Scroll to error
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Focus on confirm password field
+            confirmPasswordField.focus();
+            
+            return false;
+        }
+        
+        // Check minimum password strength
+        const { strength } = checkPasswordStrength(password);
+        if (strength < 2) {
+            event.preventDefault();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'rounded-lg p-4 mb-4 bg-yellow-50 border border-yellow-200 text-yellow-700';
+            errorDiv.innerHTML = '<div class="flex items-center"><i class="bi bi-exclamation-triangle-fill mr-3"></i>Le mot de passe est trop faible. Veuillez utiliser un mot de passe plus sécurisé.</div>';
+            
+            const existingError = form.querySelector('.bg-yellow-50');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            form.insertBefore(errorDiv, form.firstChild);
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            passwordField.focus();
+            
+            return false;
+        }
+    });
+    
+    // Real-time password match validation
+    confirmPasswordField.addEventListener('input', function() {
+        const password = passwordField.value;
+        const confirmPassword = this.value;
+        
+        if (confirmPassword.length > 0) {
+            if (password === confirmPassword) {
+                this.classList.remove('border-red-300', 'focus:ring-red-500', 'focus:border-red-500');
+                this.classList.add('border-green-300', 'focus:ring-green-500', 'focus:border-green-500');
+            } else {
+                this.classList.remove('border-green-300', 'focus:ring-green-500', 'focus:border-green-500');
+                this.classList.add('border-red-300', 'focus:ring-red-500', 'focus:border-red-500');
+            }
+        } else {
+            this.classList.remove('border-red-300', 'focus:ring-red-500', 'focus:border-red-500', 'border-green-300', 'focus:ring-green-500', 'focus:border-green-500');
+        }
+    });
+});
+</script>
+{% endblock %}

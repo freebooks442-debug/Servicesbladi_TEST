@@ -1,0 +1,60 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Mise à jour de demande - ServicesBladi{% endblock %}
+
+{% block content %}
+<!-- Status Update Icon -->
+<div class="icon-container {% if status_class == 'completed' %}success{% elif status_class == 'in_progress' %}warning{% else %}primary{% endif %}">
+    <span class="icon">📊</span>
+</div>
+
+<!-- Main Message -->
+<h1 class="title">Demande mise à jour</h1>
+<p class="subtitle">{{ expert_name }} a mis à jour le statut de votre demande</p>
+
+<!-- Request Details -->
+<div class="info-box">
+    <div class="info-title">📋 Demande :</div>
+    <div class="info-text">
+        <strong>{{ request_title }}</strong>
+        {% if request_description %}
+        <br><em>{{ request_description|truncatewords:15 }}</em>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Status Update -->
+<div class="info-box {% if status_class == 'completed' %}success{% elif status_class == 'in_progress' %}warning{% else %}primary{% endif %}">
+    <div class="info-title">📊 Nouveau statut :</div>
+    <div class="info-text">
+        <strong>{{ new_status }}</strong><br>
+        Expert : {{ expert_name }}
+    </div>
+</div>
+
+<!-- Action Button -->
+<a href="https://servicesbladi.com/accounts/dashboard/" class="button {% if status_class == 'completed' %}success{% elif status_class == 'in_progress' %}warning{% endif %}">
+    Voir ma demande
+</a>
+{% endblock %}
+    {% if status_class == 'pending' %}
+        Votre demande est en attente de traitement. Nous vous tiendrons informé de l'évolution.
+    {% elif status_class == 'in_progress' %}
+        Votre demande est actuellement en cours de traitement. Notre expert travaille activement sur votre dossier.
+    {% elif status_class == 'completed' %}
+        🎉 Félicitations! Votre demande a été traitée avec succès. Vous pouvez consulter les détails dans votre espace personnel.
+    {% elif status_class == 'cancelled' %}
+        Votre demande a été annulée. Si vous avez des questions, n'hésitez pas à nous contacter.
+    {% endif %}
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ site_url }}/accounts/dashboard/" class="button">
+        📋 Voir ma demande
+    </a>
+</div>
+
+<div class="content" style="margin-top: 30px; font-size: 14px; color: #666;">
+    <strong>💡 Important:</strong> Consultez régulièrement votre espace personnel pour suivre l'évolution de vos demandes.
+</div>
+{% endblock %}

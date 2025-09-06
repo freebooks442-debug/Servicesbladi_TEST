@@ -1,0 +1,297 @@
+{% extends 'admin/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Mon Profil" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Custom animations */
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  }
+  
+  .animate-pulse-custom {
+    animation: pulse 2s infinite;
+  }
+
+  /* Enhanced gold gradient - More specific targeting */
+  .bg-gold-gradient,
+  div.bg-gold-gradient,
+  .bg-gold-gradient * {
+    background: linear-gradient(135deg, #DAA520 0%, #FFD700 25%, #FFC107 50%, #FF8F00 75%, #FF6F00 100%) !important;
+    background-color: #DAA520 !important; /* Strong fallback */
+    color: white !important;
+  }
+
+  /* Alternative gradient if the above doesn't work */
+  .gold-header {
+    background: #DAA520 !important;
+    background: -webkit-linear-gradient(135deg, #DAA520 0%, #FFD700 100%) !important;
+    background: -moz-linear-gradient(135deg, #DAA520 0%, #FFD700 100%) !important;
+    background: linear-gradient(135deg, #DAA520 0%, #FFD700 100%) !important;
+    color: white !important;
+  }
+
+  /* Badge styles */
+  .badge-gradient {
+    background: linear-gradient(45deg, #f59e0b, #eab308) !important;
+    background-color: #f59e0b !important; /* Fallback */
+  }
+  
+  /* Ensure text visibility on gold background */
+  .text-white,
+  .bg-gold-gradient .text-white,
+  .gold-header .text-white {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+  }
+
+  /* Force visibility of icons */
+  .bg-gold-gradient i,
+  .gold-header i {
+    color: white !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+            <div class="bg-gold-gradient gold-header px-6 py-4 flex justify-between items-center">
+                <h1 class="text-white text-xl font-bold flex items-center">
+                    <i class="bi bi-person-badge-fill mr-3 text-2xl text-white"></i>
+                    {% trans "Mon Profil Administrateur" %}
+                </h1>
+                <a href="{% url 'admin_dashboard' %}" 
+                   class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center text-sm font-medium">
+                    <i class="bi bi-arrow-left mr-2 text-white"></i>
+                    {% trans "Retour au Tableau de Bord" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 rounded-lg p-4 {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                    <div class="flex items-center">
+                        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-exclamation-triangle-fill{% elif message.tags == 'warning' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %} mr-3"></i>
+                        <span class="font-medium">{{ message }}</span>
+                        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-gray-400 hover:text-gray-600">
+                            <i class="bi bi-x text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Profile Overview Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                    <div class="bg-gold-gradient gold-header text-white p-8 text-center relative">
+                        <div class="absolute top-4 right-4">
+                            <span class="badge-gradient text-white text-xs px-2 py-1 rounded-full font-semibold">
+                                {% trans "ADMIN" %}
+                            </span>
+                        </div>
+                        {% if request.user.profile_picture %}
+                            <img src="{{ request.user.get_profile_picture_url }}" 
+                                 alt="Profile Picture" 
+                                 class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white border-opacity-30 object-cover">
+                        {% else %}
+                            <div class="w-24 h-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center mx-auto mb-4 border-4 border-white border-opacity-30">
+                                <i class="bi bi-person-fill text-white text-3xl"></i>
+                            </div>
+                        {% endif %}
+                        <h2 class="text-xl font-bold mb-1">{{ request.user.first_name }} {{ request.user.name }}</h2>
+                        <p class="text-sm opacity-90 mb-4">{% trans "Administrateur Système" %}</p>
+                        <div class="flex justify-center space-x-6 text-sm">
+                            <div class="text-center">
+                                <div class="font-bold text-lg">{{ users_count|default:"0" }}</div>
+                                <div class="opacity-80">{% trans "Utilisateurs" %}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-lg">{{ requests_count|default:"0" }}</div>
+                                <div class="opacity-80">{% trans "Demandes" %}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="bi bi-gear-fill mr-2 text-amber-600"></i>
+                            {% trans "Actions Rapides" %}
+                        </h3>
+                        <div class="space-y-3">
+                            <a href="{% url 'admin_edit_profile' %}" 
+                               class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center font-medium animate-pulse-custom">
+                                <i class="bi bi-pencil-square mr-2"></i>
+                                {% trans "Modifier mon profil" %}
+                            </a>
+                            <a href="{% url 'admin_users' %}" 
+                               class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center font-medium">
+                                <i class="bi bi-people-fill mr-2"></i>
+                                {% trans "Gérer les utilisateurs" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Information -->
+            <div class="lg:col-span-2">
+                <div class="space-y-6">
+                    <!-- Personal Information -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-person-lines-fill mr-3 text-blue-600"></i>
+                                {% trans "Informations Personnelles" %}
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Prénom" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.first_name|default:"-" }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Nom de famille" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.name|default:"-" }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Email" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.email }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Téléphone" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.phone|default:"-" }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Date de naissance" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.birth_date|date:"d/m/Y"|default:"-" }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Pays de résidence" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.residence_country|default:"-" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-shield-check mr-3 text-purple-600"></i>
+                                {% trans "Informations du Compte" %}
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Type de compte" %}</label>
+                                    <div class="flex items-center">
+                                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm font-medium">
+                                            {{ request.user.account_type|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Statut" %}</label>
+                                    <div class="flex items-center">
+                                        {% if request.user.is_active %}
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium flex items-center">
+                                                <i class="bi bi-check-circle-fill mr-1"></i>
+                                                {% trans "Actif" %}
+                                            </span>
+                                        {% else %}
+                                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-medium flex items-center">
+                                                <i class="bi bi-x-circle-fill mr-1"></i>
+                                                {% trans "Inactif" %}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Date d'inscription" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.date_joined|date:"d/m/Y à H:i" }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Dernière connexion" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.last_login|date:"d/m/Y à H:i"|default:"-" }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Langue préférée" %}</label>
+                                    <div class="text-gray-900 font-medium">{{ request.user.preferred_languages|default:"Français" }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-sm font-medium text-gray-500">{% trans "Email vérifié" %}</label>
+                                    <div class="flex items-center">
+                                        {% if request.user.is_verified %}
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium flex items-center">
+                                                <i class="bi bi-patch-check-fill mr-1"></i>
+                                                {% trans "Vérifié" %}
+                                            </span>
+                                        {% else %}
+                                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium flex items-center">
+                                                <i class="bi bi-clock-fill mr-1"></i>
+                                                {% trans "En attente" %}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Summary -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <i class="bi bi-graph-up mr-3 text-green-600"></i>
+                                {% trans "Résumé d'Activité" %}
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-blue-600">{{ users_count|default:"0" }}</div>
+                                    <div class="text-sm text-gray-600 mt-1">{% trans "Utilisateurs gérés" %}</div>
+                                </div>
+                                <div class="text-center p-4 bg-green-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-green-600">{{ requests_count|default:"0" }}</div>
+                                    <div class="text-sm text-gray-600 mt-1">{% trans "Demandes traitées" %}</div>
+                                </div>
+                                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-purple-600">{{ documents_count|default:"0" }}</div>
+                                    <div class="text-sm text-gray-600 mt-1">{% trans "Documents validés" %}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Help Section -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6">
+                        <div class="flex items-start">
+                            <i class="bi bi-lightbulb-fill text-amber-600 text-xl mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold text-amber-800 mb-2">{% trans "Conseil" %}</h4>
+                                <p class="text-amber-700 text-sm">
+                                    {% trans "Vous pouvez modifier vos informations personnelles en cliquant sur le bouton 'Modifier mon profil'. Assurez-vous de maintenir vos informations à jour pour une meilleure expérience utilisateur." %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

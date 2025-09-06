@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServicesBladi - Connexion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'img/V2.png' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#C49A5A',
+                        secondary: '#8B7355',
+                        accent: '#F5F1EB'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .slide-enter {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        
+        .slide-enter-active {
+            transform: translateX(0);
+            opacity: 1;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .slide-exit {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .slide-exit-active {
+            transform: translateX(-100%);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .form-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Message animation styles */
+        [class*="bg-red-50"], [class*="bg-green-50"], [class*="bg-yellow-50"], [class*="bg-blue-50"] {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-primary/10">
+    
+    <!-- Home Button -->
+    <div class="absolute top-6 left-6 z-50">
+        <a href="{% url 'home' %}" class="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span class="text-gray-700 font-medium">Accueil</span>
+        </a>
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-6xl mx-auto">
+            <!-- Split Screen Container -->
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px] lg:min-h-[700px] flex flex-col lg:flex-row relative">
+                
+                <!-- Left Side - Branding (hidden on mobile, only visible on desktop) -->
+                <div class="hidden lg:flex w-full lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-secondary relative overflow-hidden min-h-[400px] lg:min-h-full">
+                    <!-- Background Pattern -->
+                    <div class="absolute inset-0 opacity-10">
+                        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grid)" />
+                        </svg>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="relative z-10 h-full flex flex-col justify-center px-6 lg:px-12 py-8 lg:py-12 text-white min-h-[400px]">
+                        <!-- Logo -->
+                        <div class="mb-8">
+                            <img src="{% static 'img/V2.png' %}" alt="ServicesBladi" class="h-16 mb-6 filter brightness-0 invert">
+                        </div>
+                        
+                        <!-- Main Content -->
+                        <div class="space-y-6">
+                            <h1 class="text-4xl lg:text-5xl font-bold leading-tight">
+                                Bienvenue sur<br>
+                                <span class="text-accent">ServicesBladi</span>
+                            </h1>
+                            
+                            <p class="text-xl text-white/90 leading-relaxed max-w-md">
+                                Votre plateforme de confiance pour tous vos services administratifs au Maroc
+                            </p>
+                            
+                            <!-- Features -->
+                            <div class="space-y-4 mt-8">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                    <span class="text-white/90">Experts certifiés et vérifiés</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                    <span class="text-white/90">Support 24/7 en français</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-accent rounded-full"></div>
+                                    <span class="text-white/90">Processus sécurisé et rapide</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Stats -->
+                            <div class="grid grid-cols-2 gap-6 mt-8 pt-6 border-t border-white/20">
+                                <div>
+                                    <div class="text-2xl font-bold text-accent">500+</div>
+                                    <div class="text-sm text-white/80">Clients satisfaits</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-accent">50+</div>
+                                    <div class="text-sm text-white/80">Experts disponibles</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Vertical Line Separator -->
+                    <div class="absolute top-0 right-0 h-full w-px bg-white/30 hidden lg:block z-20"></div>
+                </div>
+
+                <!-- Right Side - Forms -->
+                <div class="w-full lg:w-1/2 p-6 lg:p-12 flex flex-col justify-center relative min-h-[400px] lg:min-h-full">
+                    
+                    <!-- Form Header -->
+                    <div class="text-center mb-8">
+                        <!-- Logo for mobile only -->
+                        <div class="lg:hidden mb-6">
+                            <img src="{% static 'img/V2.png' %}" alt="ServicesBladi" class="h-12 mx-auto">
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2 lg:block hidden">Connexion</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2 lg:hidden">Bienvenue</h2>
+                        <p class="text-gray-600">Accédez à votre espace personnel</p>
+                    </div>
+                
+                    <!-- Toggle Switch -->
+                    <div class="flex items-center justify-center mb-8">
+                        <div class="relative bg-gray-100 rounded-full p-1 flex">
+                            <button type="button" id="clientToggle" class="relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 z-10 client-active">
+                                Client
+                            </button>
+                            <button type="button" id="expertToggle" class="relative px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 z-10">
+                                Expert
+                            </button>
+                            <div id="toggleSlider" class="absolute top-1 left-1 w-[calc(50%-4px)] h-[calc(100%-8px)] bg-primary rounded-full transition-transform duration-300 transform translate-x-0"></div>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    {% if messages %}
+                    <div class="mb-6">
+                        {% for message in messages %}
+                            <!-- Filter out specific unwanted messages -->
+                            {% if 'Appointment successfully scheduled' not in message.message and 'Rendez-vous planifié avec succès' not in message.message and 'No active services found' not in message.message %}
+                                <div class="p-4 rounded-lg mb-4 {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700 border border-yellow-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            {% if message.tags == 'error' %}
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            {% elif message.tags == 'warning' %}
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            {% elif message.tags == 'success' %}
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                            {% else %}
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                            {% endif %}
+                                        </svg>
+                                        <span class="text-sm font-medium">{{ message.message }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                <!-- Client Login Form -->
+                <div id="clientForm" class="form-container">
+                    <form action="{% url 'accounts:login' %}" method="post" class="space-y-6">
+                        {% csrf_token %}
+                        <input type="hidden" name="account_type" value="client">
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="client_email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                        </svg>
+                                    </div>
+                                    <input type="email" id="client_email" name="email" required 
+                                           class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                           placeholder="votre@email.com">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="client_password" class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                    </div>
+                                    <input type="password" id="client_password" name="password" required 
+                                           class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                           placeholder="••••••••">
+                                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="remember_me" class="rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0">
+                                <span class="ml-2 text-sm text-gray-600">Se souvenir de moi</span>
+                            </label>
+                            <a href="{% url 'accounts:password_reset_request' %}" class="text-sm text-primary hover:text-secondary transition-colors">
+                                Mot de passe oublié?
+                            </a>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary hover:bg-secondary text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <span class="flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                </svg>
+                                Se connecter en tant que Client
+                            </span>
+                        </button>
+
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+
+                    <div class="mt-6">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-500">Nouveau sur ServicesBladi?</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button type="button" id="showRegisterForm" class="w-full bg-white border-2 border-primary text-primary font-semibold py-3 px-4 rounded-lg hover:bg-primary hover:text-white transition-all duration-200">
+                                Créer un compte Client
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expert Login Form -->
+                <div id="expertForm" class="form-container hidden">
+                    <form action="{% url 'accounts:login' %}" method="post" class="space-y-6">
+                        {% csrf_token %}
+                        <input type="hidden" name="account_type" value="expert">
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="expert_email" class="block text-sm font-medium text-gray-700 mb-2">Email Professionnel</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                    </div>
+                                    <input type="email" id="expert_email" name="email" required 
+                                           class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                           placeholder="expert@exemple.com">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="expert_password" class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                    </div>
+                                    <input type="password" id="expert_password" name="password" required 
+                                           class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                           placeholder="••••••••">
+                                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="remember_me" class="rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0">
+                                <span class="ml-2 text-sm text-gray-600">Se souvenir de moi</span>
+                            </label>
+                            <a href="{% url 'accounts:password_reset_request' %}" class="text-sm text-primary hover:text-secondary transition-colors">
+                                Mot de passe oublié?
+                            </a>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <span class="flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                </svg>
+                                Accès Expert
+                            </span>
+                        </button>
+
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-amber-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <p class="text-sm text-amber-800">
+                                    <strong>Espace Expert:</strong> Réservé aux professionnels accrédités
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Form (Hidden by default) -->
+                <div id="registerForm" class="form-container hidden">
+                    <div class="mb-6">
+                        <button type="button" id="backToLogin" class="flex items-center text-primary hover:text-secondary transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Retour à la connexion
+                        </button>
+                    </div>
+
+                    <form action="{% url 'accounts:register' %}" method="post" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="register_account_type" value="client">
+                        
+                        <!-- Personal Information -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">Prénom <span class="text-red-500">*</span></label>
+                                <input type="text" id="first_name" name="first_name" required 
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                                       placeholder="Votre prénom">
+                            </div>
+                            <div>
+                                <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Nom <span class="text-red-500">*</span></label>
+                                <input type="text" id="last_name" name="last_name" required 
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                                       placeholder="Votre nom">
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="reg_email" class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
+                                <input type="email" id="reg_email" name="email" required 
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                                       placeholder="votre@email.com">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone <span class="text-red-500">*</span></label>
+                                <input type="tel" id="phone" name="phone" required 
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                                       placeholder="+212 6XX XX XX XX">
+                            </div>
+                        </div>
+
+                        <!-- Password Fields -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="reg_password" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe <span class="text-red-500">*</span></label>
+                                <input type="password" id="reg_password" name="password" required 
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                                       placeholder="••••••••">
+                                <p class="text-xs text-gray-500 mt-1">Au moins 8 caractères</p>
+                            </div>
+                            <div>
+                                <label for="reg_password_confirm" class="block text-sm font-medium text-gray-700 mb-1">Confirmer <span class="text-red-500">*</span></label>
+                                <input type="password" id="reg_password_confirm" name="password_confirm" required 
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                                       placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <!-- Country of Residence -->
+                        <div>
+                            <label for="residence_country" class="block text-sm font-medium text-gray-700 mb-1">Pays de résidence <span class="text-red-500">*</span></label>
+                            <select id="residence_country" name="residence_country" required 
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm">
+                                <option value="">Sélectionnez votre pays de résidence</option>
+                                <option value="FR">France</option>
+                                <option value="BE">Belgique</option>
+                                <option value="ES">Espagne</option>
+                                <option value="IT">Italie</option>
+                                <option value="DE">Allemagne</option>
+                                <option value="NL">Pays-Bas</option>
+                                <option value="MA">Maroc</option>
+                                <option value="CA">Canada</option>
+                                <option value="US">États-Unis</option>
+                                <option value="GB">Royaume-Uni</option>
+                                <option value="CH">Suisse</option>
+                                <option value="AE">Émirats Arabes Unis</option>
+                                <option value="QA">Qatar</option>
+                                <option value="SA">Arabie Saoudite</option>
+                            </select>
+                        </div>
+
+                        <!-- Last Visit to Morocco -->
+                        <div>
+                            <label for="last_visit" class="block text-sm font-medium text-gray-700 mb-1">Date de dernière visite au Maroc</label>
+                            <input type="date" id="last_visit" name="last_visit" 
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm">
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div>
+                            <label class="flex items-start">
+                                <input type="checkbox" name="terms" required class="mt-1 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0">
+                                <span class="ml-2 text-sm text-gray-600">
+                                    J'accepte les <a href="#" class="text-primary hover:text-secondary underline">conditions générales d'utilisation</a> et la <a href="#" class="text-primary hover:text-secondary underline">politique de confidentialité</a> <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary hover:bg-secondary text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <i class="bi bi-person-plus mr-2"></i>
+                            Créer mon compte
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle between client and expert forms
+        const clientToggle = document.getElementById('clientToggle');
+        const expertToggle = document.getElementById('expertToggle');
+        const toggleSlider = document.getElementById('toggleSlider');
+        const clientForm = document.getElementById('clientForm');
+        const expertForm = document.getElementById('expertForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegisterBtn = document.getElementById('showRegisterForm');
+        const backToLoginBtn = document.getElementById('backToLogin');
+
+        // Toggle functionality
+        clientToggle.addEventListener('click', () => {
+            if (!clientToggle.classList.contains('client-active')) {
+                // Animate slider
+                toggleSlider.style.transform = 'translateX(0)';
+                
+                // Update button states
+                clientToggle.classList.add('client-active', 'text-white');
+                clientToggle.classList.remove('text-gray-700');
+                expertToggle.classList.remove('expert-active', 'text-white');
+                expertToggle.classList.add('text-gray-700');
+                
+                // Show client form, hide expert form
+                setTimeout(() => {
+                    expertForm.classList.add('hidden');
+                    registerForm.classList.add('hidden');
+                    clientForm.classList.remove('hidden');
+                }, 150);
+            }
+        });
+
+        expertToggle.addEventListener('click', () => {
+            if (!expertToggle.classList.contains('expert-active')) {
+                // Animate slider
+                toggleSlider.style.transform = 'translateX(100%)';
+                
+                // Update button states
+                expertToggle.classList.add('expert-active', 'text-white');
+                expertToggle.classList.remove('text-gray-700');
+                clientToggle.classList.remove('client-active', 'text-white');
+                clientToggle.classList.add('text-gray-700');
+                
+                // Show expert form, hide client form
+                setTimeout(() => {
+                    clientForm.classList.add('hidden');
+                    registerForm.classList.add('hidden');
+                    expertForm.classList.remove('hidden');
+                }, 150);
+            }
+        });
+
+        // Registration form toggle
+        showRegisterBtn.addEventListener('click', () => {
+            clientForm.classList.add('hidden');
+            expertForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        });
+
+        backToLoginBtn.addEventListener('click', () => {
+            registerForm.classList.add('hidden');
+            if (clientToggle.classList.contains('client-active')) {
+                clientForm.classList.remove('hidden');
+            } else {
+                expertForm.classList.remove('hidden');
+            }
+        });
+
+        // Password visibility toggle
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', () => {
+                const input = button.previousElementSibling;
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                
+                // Toggle icon
+                const icon = button.querySelector('svg');
+                if (type === 'text') {
+                    icon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                    `;
+                } else {
+                    icon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    `;
+                }
+            });
+        });
+
+        // Initialize client toggle as active
+        clientToggle.classList.add('client-active', 'text-white');
+        expertToggle.classList.add('text-gray-700');
+        
+        // Auto-dismiss messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('[class*="bg-red-50"], [class*="bg-green-50"], [class*="bg-yellow-50"], [class*="bg-blue-50"]');
+            messages.forEach(function(message) {
+                // Add close button to each message
+                const closeButton = document.createElement('button');
+                closeButton.innerHTML = '&times;';
+                closeButton.className = 'ml-auto text-lg font-bold opacity-70 hover:opacity-100 transition-opacity';
+                closeButton.onclick = function() {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateY(-10px)';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                };
+                
+                // Add close button to the message content
+                const messageContent = message.querySelector('.flex');
+                if (messageContent) {
+                    messageContent.appendChild(closeButton);
+                }
+                
+                // Auto-dismiss after 8 seconds
+                setTimeout(function() {
+                    if (message.parentNode) {
+                        message.style.opacity = '0';
+                        message.style.transform = 'translateY(-10px)';
+                        setTimeout(function() {
+                            if (message.parentNode) {
+                                message.remove();
+                            }
+                        }, 300);
+                    }
+                }, 8000);
+            });
+        });
+    </script>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

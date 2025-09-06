@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ServicesBladi - Expert{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Espace expert services administratifs Maroc{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}maroc, administratif, expert{% endblock %}">
+
+  <!-- Favicons -->
+  <link href="{% static 'img/favicon.png' %}" rel="icon">
+  <link href="{% static 'img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e40af',
+            secondary: '#c49a5a',
+            accent: '#06b6d4',
+            dark: '#1f2937',
+            light: '#f8fafc'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  {% block extra_styles %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 font-sans">
+  <div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <div class="hidden md:flex md:w-64 md:flex-col">
+      <div class="flex flex-col flex-grow pt-5 bg-gradient-to-br from-primary to-blue-800 overflow-y-auto">
+        <!-- Logo/Brand -->
+        <div class="flex items-center flex-shrink-0 px-4">
+          <div class="flex items-center">
+            <img class="h-8 w-auto" src="{% static 'img/favicon.png' %}" alt="ServicesBladi">
+            <span class="ml-2 text-lg font-semibold text-white">ServicesBladi</span>
+          </div>
+        </div>
+
+        <!-- Expert Profile Section -->
+        <div class="mt-6 px-4">
+          <div class="bg-white/10 rounded-xl p-4 text-center">
+            <div class="relative inline-block">
+              {% if user.profile_picture %}
+                <img class="h-16 w-16 rounded-full object-cover border-3 border-white/30 profile-image" src="{{ user.profile_picture.url }}" alt="Profile">
+              {% else %}
+                <div class="h-16 w-16 rounded-full bg-white/20 flex items-center justify-center border-3 border-white/30">
+                  <i class="bi bi-person-fill text-2xl text-white"></i>
+                </div>
+              {% endif %}
+              <div class="absolute -bottom-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-white"></div>
+            </div>
+            <h3 class="mt-2 text-sm font-medium text-white">{{ user.first_name|default:user.name|default:"Expert" }}</h3>
+            <p class="text-xs text-white/70">Expert MRE</p>
+            <button onclick="openProfileModal()" class="mt-2 text-xs text-white/80 hover:text-white transition-colors">
+              <i class="bi bi-gear"></i> Paramètres
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="mt-6 flex-1 px-2 space-y-1">
+          <a href="{% url 'expert_dashboard' %}" class="{% if request.resolver_match.url_name == 'expert_dashboard' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-speedometer2 mr-3 text-lg"></i>
+            Tableau de bord
+          </a>
+          
+          <a href="{% url 'expert_demandes' %}" class="{% if request.resolver_match.url_name == 'expert_demandes' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-file-earmark-text mr-3 text-lg"></i>
+            Demandes Client
+          </a>
+          
+          <a href="{% url 'expert_rendezvous' %}" class="{% if request.resolver_match.url_name == 'expert_rendezvous' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-calendar-event mr-3 text-lg"></i>
+            Rendez-vous
+          </a>
+          
+          <a href="{% url 'expert_documents' %}" class="{% if request.resolver_match.url_name == 'expert_documents' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-folder mr-3 text-lg"></i>
+            Documents
+          </a>
+          
+          <a href="{% url 'expert_messages' %}" class="{% if request.resolver_match.url_name == 'expert_messages' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-chat-dots mr-3 text-lg"></i>
+            Messages
+            {% if unread_messages_count > 0 %}
+              <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ unread_messages_count }}</span>
+            {% endif %}
+          </a>
+          
+          <a href="{% url 'expert_ressources' %}" class="{% if request.resolver_match.url_name == 'expert_ressources' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+            <i class="bi bi-book mr-3 text-lg"></i>
+            Ressources
+          </a>
+        </nav>
+
+        <!-- Logout Button -->
+        <div class="flex-shrink-0 px-2 pb-4">
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-white/70 hover:bg-white/10 hover:text-white group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200">
+              <i class="bi bi-box-arrow-right mr-3 text-lg"></i>
+              Déconnexion
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu button -->
+    <div class="md:hidden">
+      <div class="fixed inset-0 flex z-40" id="mobile-menu" style="display: none;">
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" onclick="toggleMobileMenu()"></div>
+        <div class="relative flex-1 flex flex-col max-w-xs w-full bg-gradient-to-br from-primary to-blue-800">
+          <div class="absolute top-0 right-0 -mr-12 pt-2">
+            <button onclick="toggleMobileMenu()" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+              <span class="sr-only">Close sidebar</span>
+              <i class="bi bi-x-lg text-white text-lg"></i>
+            </button>
+          </div>
+          
+          <!-- Mobile sidebar content (same as desktop) -->
+          <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+            <div class="flex items-center flex-shrink-0 px-4">
+              <img class="h-8 w-auto" src="{% static 'img/favicon.png' %}" alt="ServicesBladi">
+              <span class="ml-2 text-lg font-semibold text-white">ServicesBladi</span>
+            </div>
+            
+            <!-- Mobile Expert Profile Section -->
+            <div class="mt-6 px-4">
+              <div class="bg-white/10 rounded-xl p-4 text-center">
+                <div class="relative inline-block">
+                  {% if user.profile_picture %}
+                    <img class="h-16 w-16 rounded-full object-cover border-3 border-white/30 profile-image" src="{{ user.profile_picture.url }}" alt="Profile">
+                  {% else %}
+                    <div class="h-16 w-16 rounded-full bg-white/20 flex items-center justify-center border-3 border-white/30">
+                      <i class="bi bi-person-fill text-2xl text-white"></i>
+                    </div>
+                  {% endif %}
+                  <div class="absolute -bottom-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-white"></div>
+                </div>
+                <h3 class="mt-2 text-sm font-medium text-white">{{ user.first_name|default:user.name|default:"Expert" }}</h3>
+                <p class="text-xs text-white/70">Expert MRE</p>
+                <button onclick="openProfileModal(); toggleMobileMenu();" class="mt-2 text-xs text-white/80 hover:text-white transition-colors">
+                  <i class="bi bi-gear"></i> Paramètres
+                </button>
+              </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <nav class="mt-6 px-2 space-y-1">
+              <a href="{% url 'expert_dashboard' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'expert_dashboard' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-speedometer2 mr-3 text-lg"></i>
+                Tableau de bord
+              </a>
+              
+              <a href="{% url 'expert_demandes' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'expert_demandes' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-file-earmark-text mr-3 text-lg"></i>
+                Demandes Client
+              </a>
+              
+              <a href="{% url 'expert_rendezvous' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'expert_rendezvous' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-calendar-event mr-3 text-lg"></i>
+                Rendez-vous
+              </a>
+              
+              <a href="{% url 'expert_documents' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'expert_documents' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-folder mr-3 text-lg"></i>
+                Documents
+              </a>
+              
+              <a href="{% url 'expert_messages' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'expert_messages' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-chat-dots mr-3 text-lg"></i>
+                Messages
+                {% if unread_messages_count > 0 %}
+                  <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ unread_messages_count }}</span>
+                {% endif %}
+              </a>
+              
+              <a href="{% url 'expert_ressources' %}" onclick="toggleMobileMenu()" class="{% if request.resolver_match.url_name == 'expert_ressources' %}bg-white/20 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %} group flex items-center px-3 py-2 text-sm font-medium rounded-lg">
+                <i class="bi bi-book mr-3 text-lg"></i>
+                Ressources
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex flex-col flex-1 overflow-hidden">
+      <!-- Top header -->
+      <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="flex items-center justify-between px-6 py-4">
+          <div class="flex items-center">
+            <button onclick="toggleMobileMenu()" class="md:hidden -ml-2 mr-2 h-8 w-8 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+              <i class="bi bi-list text-xl"></i>
+            </button>
+            <h1 class="text-xl font-semibold text-gray-900">{% block page_title %}Espace Expert{% endblock %}</h1>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <!-- Notifications -->
+            <div class="relative">
+              <button class="relative p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                <i class="bi bi-bell text-lg"></i>
+                {% if notifications_count > 0 %}
+                  <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">{{ notifications_count }}</span>
+                {% endif %}
+              </button>
+            </div>
+            
+            <!-- User menu -->
+            <div class="relative">
+              <button onclick="toggleUserMenu()" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                {% if user.profile_picture %}
+                  <img class="h-8 w-8 rounded-full object-cover profile-image" src="{{ user.profile_picture.url }}" alt="Profile">
+                {% else %}
+                  <div class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                    <i class="bi bi-person-fill text-gray-600"></i>
+                  </div>
+                {% endif %}
+                <span class="hidden md:block text-sm font-medium text-gray-700">{{ user.first_name|default:user.name }}</span>
+                <i class="bi bi-chevron-down text-xs text-gray-500"></i>
+              </button>
+              
+              <!-- Dropdown menu -->
+              <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
+                <button onclick="openProfileModal()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <i class="bi bi-person mr-2"></i>Mon Profil
+                </button>
+                <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <i class="bi bi-box-arrow-right mr-2"></i>Déconnexion
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main content area -->
+      <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profileModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Modifier mon profil</h3>
+          <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="bi bi-x-lg text-xl"></i>
+          </button>
+        </div>
+        
+        <form id="profileForm" action="{% url 'accounts:api_update_profile' %}" method="post" enctype="multipart/form-data" class="space-y-4">
+          {% csrf_token %}
+          
+          <!-- Profile Picture Section -->
+          <div class="text-center mb-6">
+            <div class="relative inline-block">
+              {% if user.profile_picture %}
+                <img id="profilePreview" class="h-24 w-24 rounded-full object-cover border-4 border-gray-200 profile-image" src="{{ user.profile_picture.url }}" alt="Profile">
+              {% else %}
+                <div id="profilePreview" class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-gray-200">
+                  <i class="bi bi-person-fill text-3xl text-gray-400"></i>
+                </div>
+              {% endif %}
+              <label for="profilePictureInput" class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 cursor-pointer hover:bg-blue-700">
+                <i class="bi bi-camera text-sm"></i>
+              </label>
+            </div>
+            <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" class="hidden">
+            <p class="text-sm text-gray-500 mt-2">Cliquez sur l'icône pour changer votre photo</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Basic Info -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+              <input type="text" name="name" value="{{ user.name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+              <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" name="email" value="{{ user.email }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+              <input type="tel" name="phone" value="{{ user.phone|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
+              <input type="date" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Pays de résidence</label>
+              <input type="text" name="residence_country" value="{{ user.residence_country|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+          </div>
+          
+          <!-- Expert-specific fields -->
+          {% if user.account_type == 'EXPERT' or user.account_type == 'expert' %}
+          <div class="border-t pt-4 mt-6">
+            <h4 class="text-md font-medium text-gray-900 mb-4">Informations Expert</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+                <input type="text" name="title" value="{{ expert.title|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Spécialité</label>
+                <input type="text" name="specialty" value="{{ expert.specialty|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Années d'expérience</label>
+                <input type="number" name="experience_years" value="{{ expert.experience_years|default:0 }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Langues</label>
+                <input type="text" name="languages" value="{{ expert.languages|default:'fr' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                <textarea name="bio" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">{{ expert.bio|default:'' }}</textarea>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Password Change Section -->
+          <div class="border-t pt-4 mt-6">
+            <h4 class="text-md font-medium text-gray-900 mb-4">Changer le mot de passe</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</label>
+                <input type="password" name="current_password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+                <input type="password" name="new_password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">Laissez vide si vous ne souhaitez pas changer votre mot de passe</p>
+          </div>
+          
+          <div class="flex justify-end space-x-3 pt-4">
+            <button type="button" onclick="closeProfileModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+              Annuler
+            </button>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-700 rounded-md transition-colors">
+              Sauvegarder
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Profile modal functions
+    function openProfileModal() {
+      document.getElementById('profileModal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').classList.add('hidden');
+    }
+
+    // Mobile menu functions
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    // User menu functions
+    function toggleUserMenu() {
+      const userMenu = document.getElementById('user-menu');
+      userMenu.classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      const userMenuButton = document.querySelector('[onclick="toggleUserMenu()"]');
+      const userMenu = document.getElementById('user-menu');
+      
+      if (!userMenuButton.contains(event.target)) {
+        userMenu.classList.add('hidden');
+      }
+    });
+
+    // Profile picture preview
+    document.getElementById('profilePictureInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById('profilePreview');
+          if (preview.tagName === 'IMG') {
+            preview.src = e.target.result;
+          } else {
+            // Replace div with img element
+            const img = document.createElement('img');
+            img.id = 'profilePreview';
+            img.className = 'h-24 w-24 rounded-full object-cover border-4 border-gray-200 profile-image';
+            img.src = e.target.result;
+            img.alt = 'Profile';
+            preview.parentNode.replaceChild(img, preview);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Handle profile form submission
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const submitButton = this.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      
+      // Show loading state
+      submitButton.disabled = true;
+      submitButton.textContent = 'Mise à jour...';
+      
+      fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update profile picture if new one was uploaded
+          if (data.profile_picture_url) {
+            const profileImages = document.querySelectorAll('.profile-image');
+            profileImages.forEach(img => {
+              img.src = data.profile_picture_url; // Profile picture updated
+            });
+          }
+          
+          // Show success message
+          alert('Profil mis à jour avec succès!');
+          closeProfileModal();
+          
+          // Optional: reload page to ensure all updates are visible
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          alert('Erreur: ' + (data.message || 'Erreur lors de la mise à jour du profil'));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur de connexion lors de la mise à jour du profil');
+      })
+      .finally(() => {
+        // Reset button state
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      });
+    });
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

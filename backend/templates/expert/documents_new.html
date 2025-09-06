@@ -1,0 +1,481 @@
+{% extends 'expert/base.html' %}
+{% load static %}
+
+{% block title %}Documents - Expert{% endblock %}
+{% block page_title %}Gestion des Documents{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Header with Upload -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+      <div class="flex items-center space-x-4">
+        <h2 class="text-xl font-semibold text-gray-900">Mes Documents</h2>
+        <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+          {{ documents.count|default:0 }} document{{ documents.count|pluralize }}
+        </span>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+        <!-- Upload Button -->
+        <button onclick="openUploadModal()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+          <i class="bi bi-cloud-upload mr-2"></i>
+          Ajouter Document
+        </button>
+        
+        <!-- Filters -->
+        <select id="requestFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="">Toutes les demandes</option>
+          {% for request in my_requests %}
+            <option value="{{ request.id }}">{{ request.title }}</option>
+          {% endfor %}
+          <option value="general">Documents généraux</option>
+        </select>
+        
+        <select id="typeFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <option value="">Tous les types</option>
+          <option value="template">Modèles</option>
+          <option value="guide">Guides</option>
+          <option value="form">Formulaires</option>
+          <option value="certificate">Certificats</option>
+          <option value="identity">Pièces d'identité</option>
+          <option value="justification">Justificatifs</option>
+          <option value="report">Rapports</option>
+          <option value="other">Autres</option>
+        </select>
+        
+        <!-- Search -->
+        <div class="relative">
+          <input type="text" id="searchInput" placeholder="Rechercher..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documents Grid -->
+  <div id="documentsContainer">
+    {% if documents %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for document in documents %}
+          <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 document-card" data-type="{{ document.type }}" data-name="{{ document.name|lower }}" data-request="{% if document.service_request %}{{ document.service_request.id }}{% endif %}">
+            <div class="p-6">
+              <!-- Document Icon and Type -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0">
+                    {% if document.file.name|slice:"-4:" == ".pdf" %}
+                      <i class="bi bi-file-earmark-pdf text-red-500 text-3xl"></i>
+                    {% elif document.file.name|slice:"-5:" == ".docx" or document.file.name|slice:"-4:" == ".doc" %}
+                      <i class="bi bi-file-earmark-word text-blue-500 text-3xl"></i>
+                    {% elif document.file.name|slice:"-5:" == ".xlsx" or document.file.name|slice:"-4:" == ".xls" %}
+                      <i class="bi bi-file-earmark-excel text-green-500 text-3xl"></i>
+                    {% elif document.file.name|slice:"-4:" == ".jpg" or document.file.name|slice:"-5:" == ".jpeg" or document.file.name|slice:"-4:" == ".png" %}
+                      <i class="bi bi-file-earmark-image text-purple-500 text-3xl"></i>
+                    {% else %}
+                      <i class="bi bi-file-earmark text-gray-500 text-3xl"></i>
+                    {% endif %}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-medium text-gray-900 truncate">{{ document.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ document.get_type_display|default:document.type|title }}</p>
+                  </div>
+                </div>
+                
+                <!-- Actions Dropdown -->
+                <div class="relative">
+                  <button onclick="toggleDropdown('{{ document.id }}')" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <div id="dropdown-{{ document.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                    <div class="py-1">
+                      <a href="{% url 'custom_requests:view_document' document.id %}" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="bi bi-eye mr-2"></i>Voir
+                      </a>
+                      <a href="{% url 'custom_requests:download_document' document.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="bi bi-download mr-2"></i>Télécharger
+                      </a>
+                      <button onclick="shareDocument('{{ document.id }}')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="bi bi-share mr-2"></i>Partager
+                      </button>
+                      <hr class="my-1">
+                      <button onclick="deleteDocument('{{ document.id }}')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                        <i class="bi bi-trash mr-2"></i>Supprimer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Document Details -->
+              <div class="space-y-2 mb-4">
+                {% if document.service_request %}
+                <div class="flex items-center text-sm text-blue-600">
+                  <i class="bi bi-file-text mr-2"></i>
+                  <span>Demande: {{ document.service_request.title }}</span>
+                </div>
+                {% else %}
+                <div class="flex items-center text-sm text-gray-600">
+                  <i class="bi bi-file-text mr-2"></i>
+                  <span>Document général</span>
+                </div>
+                {% endif %}
+                
+                <div class="flex items-center text-sm text-gray-600">
+                  <i class="bi bi-calendar3 mr-2"></i>
+                  <span>Ajouté le {{ document.upload_date|date:"d M Y" }}</span>
+                </div>
+                
+                {% if document.file.size %}
+                <div class="flex items-center text-sm text-gray-600">
+                  <i class="bi bi-hdd mr-2"></i>
+                  <span>{{ document.file.size|filesizeformat }}</span>
+                </div>
+                {% endif %}
+                
+                {% if document.related_request %}
+                <div class="flex items-center text-sm text-gray-600">
+                  <i class="bi bi-link-45deg mr-2"></i>
+                  <span>Lié à une demande</span>
+                </div>
+                {% endif %}
+              </div>
+
+              <!-- Description -->
+              {% if document.description %}
+              <div class="mb-4">
+                <p class="text-sm text-gray-600 line-clamp-2">{{ document.description|truncatewords:15 }}</p>
+              </div>
+              {% endif %}
+
+              <!-- Tags -->
+              {% if document.tags %}
+              <div class="flex flex-wrap gap-1 mb-4">
+                {% for tag in document.tags|slice:":3" %}
+                  <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">{{ tag }}</span>
+                {% endfor %}
+                {% if document.tags|length > 3 %}
+                  <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">+{{ document.tags|length|add:"-3" }}</span>
+                {% endif %}
+              </div>
+              {% endif %}
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <a href="{% url 'custom_requests:view_document' document.id %}" target="_blank" class="inline-flex items-center text-sm text-primary hover:text-blue-700">
+                  <i class="bi bi-eye mr-1"></i>
+                  Voir
+                </a>
+                
+                <a href="{% url 'custom_requests:download_document' document.id %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+                  <i class="bi bi-download mr-1"></i>
+                  Télécharger
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- Empty State -->
+      <div class="bg-white rounded-lg shadow p-12 text-center">
+        <i class="bi bi-folder-x text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun document trouvé</h3>
+        <p class="text-gray-500 mb-6">Commencez par ajouter vos premiers documents d'expertise.</p>
+        <button onclick="openUploadModal()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700">
+          <i class="bi bi-cloud-upload mr-2"></i>
+          Ajouter Document
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Ajouter un Document</h3>
+        <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="bi bi-x-lg text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        
+        <!-- File Upload -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Fichier</label>
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+            <input type="file" id="fileInput" name="file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
+            <div id="dropZone" onclick="document.getElementById('fileInput').click()">
+              <i class="bi bi-cloud-upload text-3xl text-gray-400 mb-2"></i>
+              <p class="text-sm text-gray-600">Cliquez pour sélectionner un fichier ou glissez-déposez ici</p>
+              <p class="text-xs text-gray-500 mt-1">PDF, DOC, XLS, Images (max 10MB)</p>
+            </div>
+            <div id="fileName" class="hidden mt-2 text-sm text-green-600"></div>
+          </div>
+        </div>
+        
+        <!-- Service Request Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span class="text-red-500">*</span> Demande associée
+          </label>
+          <select name="service_request_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="">-- Sélectionnez une demande --</option>
+            {% for request in my_requests %}
+              <option value="{{ request.id }}">
+                {{ request.title }} - {{ request.client.name }} {{ request.client.first_name }} 
+                ({{ request.get_status_display }})
+              </option>
+            {% endfor %}
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Sélectionnez la demande à laquelle ce document sera attaché</p>
+        </div>
+        
+        <!-- Document Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nom du document</label>
+          <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+        
+        <!-- Document Type -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="template">Modèle</option>
+            <option value="guide">Guide</option>
+            <option value="form">Formulaire</option>
+            <option value="certificate">Certificat</option>
+            <option value="identity">Pièce d'identité</option>
+            <option value="justification">Justificatif</option>
+            <option value="report">Rapport</option>
+            <option value="other">Autre</option>
+          </select>
+        </div>
+        
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description (optionnel)</label>
+          <textarea name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+        </div>
+        
+        <!-- Tags -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tags (optionnel)</label>
+          <input type="text" name="tags" placeholder="Séparés par des virgules" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" onclick="closeUploadModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+            Annuler
+          </button>
+          <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-700 rounded-md transition-colors">
+            Ajouter Document
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3 text-center">
+      <h3 class="text-lg font-medium text-gray-900">Supprimer le document</h3>
+      <div class="mt-2 px-7 py-3">
+        <p class="text-sm text-gray-500">
+          Êtes-vous sûr de vouloir supprimer ce document? Cette action est irréversible.
+        </p>
+      </div>
+      <div class="items-center px-4 py-3">
+        <button id="confirmDeleteButton" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+          Supprimer
+        </button>
+        <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-24 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Filter functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const requestFilter = document.getElementById('requestFilter');
+    const typeFilter = document.getElementById('typeFilter');
+    const searchInput = document.getElementById('searchInput');
+    const documentCards = document.querySelectorAll('.document-card');
+
+    function filterDocuments() {
+      const requestValue = requestFilter.value.toLowerCase();
+      const typeValue = typeFilter.value.toLowerCase();
+      const searchValue = searchInput.value.toLowerCase();
+
+      documentCards.forEach(card => {
+        const type = card.dataset.type.toLowerCase();
+        const name = card.dataset.name.toLowerCase();
+        const requestId = card.dataset.request || '';
+        
+        const typeMatch = !typeValue || type.includes(typeValue);
+        const searchMatch = !searchValue || name.includes(searchValue);
+        let requestMatch = true;
+        
+        if (requestValue) {
+          if (requestValue === 'general') {
+            requestMatch = !requestId;
+          } else {
+            requestMatch = requestId === requestValue;
+          }
+        }
+
+        if (typeMatch && searchMatch && requestMatch) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    requestFilter.addEventListener('change', filterDocuments);
+    typeFilter.addEventListener('change', filterDocuments);
+    searchInput.addEventListener('input', filterDocuments);
+  });
+
+  // Upload modal functions
+  function openUploadModal() {
+    document.getElementById('uploadModal').classList.remove('hidden');
+  }
+
+  function closeUploadModal() {
+    document.getElementById('uploadModal').classList.add('hidden');
+    document.getElementById('uploadForm').reset();
+    document.getElementById('fileName').classList.add('hidden');
+  }
+
+  // File input handling
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileName').classList.remove('hidden');
+      
+      // Auto-fill document name if empty
+      const nameInput = document.querySelector('input[name="name"]');
+      if (!nameInput.value) {
+        nameInput.value = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+      }
+    }
+  });
+
+  // Form submission
+  document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton.textContent;
+    
+    submitButton.disabled = true;
+    submitButton.textContent = 'Upload...';
+    
+    fetch('{% url "custom_requests:expert_upload_document" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erreur lors de l\'upload: ' + (data.message || 'Erreur inconnue'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Erreur de connexion');
+    })
+    .finally(() => {
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
+    });
+  });
+
+  // Dropdown functions
+  function toggleDropdown(documentId) {
+    const dropdown = document.getElementById('dropdown-' + documentId);
+    const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(d => {
+      if (d.id !== 'dropdown-' + documentId) {
+        d.classList.add('hidden');
+      }
+    });
+    
+    dropdown.classList.toggle('hidden');
+  }
+
+  // Delete functions
+  let currentDocumentId = null;
+
+  function deleteDocument(documentId) {
+    currentDocumentId = documentId;
+    document.getElementById('deleteModal').classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    currentDocumentId = null;
+  }
+
+  document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+    if (currentDocumentId) {
+      fetch(`/expert/documents/${currentDocumentId}/delete/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert('Erreur lors de la suppression');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur de connexion');
+      });
+    }
+    closeDeleteModal();
+  });
+
+  // Share function
+  function shareDocument(documentId) {
+    // TODO: Implement document sharing
+    alert('Fonctionnalité de partage à venir');
+  }
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('[onclick^="toggleDropdown"]')) {
+      const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+      allDropdowns.forEach(d => d.classList.add('hidden'));
+    }
+  });
+</script>
+{% endblock %}

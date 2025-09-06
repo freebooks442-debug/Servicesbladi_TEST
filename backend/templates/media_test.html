@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Media File Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Media File Serving Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <p>This page tests if media files are properly served by the Django application.</p>
+        <p>Upload a test document or image through the admin panel, then try to access it directly via URL.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Media URLs</h2>
+        <p class="info">Try these test URLs (replace with actual filenames):</p>
+        <ul>
+            <li><code>/media/documents/test.pdf</code></li>
+            <li><code>/media/profile_pictures/test.jpg</code></li>
+            <li><code>/media/resources/test.png</code></li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>Expected Behavior</h2>
+        <ul>
+            <li class="success">✅ Files should download or display properly</li>
+            <li class="success">✅ No 404 errors should occur</li>
+            <li class="success">✅ Proper content-type headers should be set</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>JavaScript Test</h2>
+        <button onclick="testMediaAccess()">Test Media Access</button>
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        function testMediaAccess() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p class="info">Testing media access...</p>';
+            
+            // Test if we can access the media serving endpoint
+            fetch('/media/test_nonexistent_file.txt')
+                .then(response => {
+                    if (response.status === 404) {
+                        resultsDiv.innerHTML += '<p class="success">✅ Media endpoint is responsive (404 for non-existent file is expected)</p>';
+                    } else {
+                        resultsDiv.innerHTML += '<p class="error">❌ Unexpected response: ' + response.status + '</p>';
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML += '<p class="error">❌ Error accessing media endpoint: ' + error.message + '</p>';
+                });
+        }
+    </script>
+</body>
+</html>

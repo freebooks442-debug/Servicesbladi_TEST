@@ -1,0 +1,85 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Bienvenue sur ServicesBladi{% endblock %}
+
+{% block content %}
+<!-- Welcome Icon -->
+<div class="icon-container success">
+    <span class="icon">🎉</span>
+</div>
+
+<!-- Main Message -->
+<h1 class="title">Bienvenue {{ user_name }} !</h1>
+<p class="subtitle">Votre compte {{ user_type }} a été créé avec succès</p>
+
+<!-- Welcome Message -->
+<div class="content">
+    Félicitations ! Vous faites maintenant partie de la communauté ServicesBladi, votre partenaire de confiance pour toutes vos démarches administratives au Maroc.
+</div>
+
+<!-- Services Overview -->
+<div class="info-box primary">
+    <div class="info-title">🇲🇦 Nos services principaux :</div>
+    <div class="info-text">
+        • Démarches administratives (CIN, passeports)<br>
+        • Services immobiliers et financiers<br>
+        • Assistance juridique et éducative<br>
+        • Support personnalisé par nos experts
+    </div>
+</div>
+
+<!-- Account Information -->
+<div class="info-box">
+    <div class="info-title">Informations de votre compte :</div>
+    <div class="info-text">
+        <strong>Type :</strong> {{ user_type }}<br>
+        <strong>Inscription :</strong> {{ "now"|date:"d/m/Y" }}
+    </div>
+</div>
+
+{% if is_admin_created and password %}
+<!-- Temporary Password Info -->
+<div class="info-box warning">
+    <div class="info-title">🔐 Mot de passe temporaire :</div>
+    <div class="info-text">
+        <strong>{{ password }}</strong><br>
+        <em>Changez-le lors de votre première connexion</em>
+    </div>
+</div>
+{% endif %}
+
+<!-- Get Started Button -->
+<a href="https://servicesbladi.com/accounts/login/" class="button">
+    Accéder à mon compte
+</a>
+{% endblock %}
+            Vos informations de connexion
+        </div>
+        <div style="font-size: 14px; color: #856404; margin-top: 10px; background-color: rgba(255,255,255,0.8); padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <strong>Email:</strong> {{ user.email }}<br>
+            <strong>Mot de passe temporaire:</strong> {{ password }}
+        </div>
+        <div style="font-size: 12px; color: #856404; margin-top: 10px; font-style: italic;">
+            ⚠️ Veuillez changer votre mot de passe lors de votre première connexion
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/accounts/dashboard/" class="button">
+        🏠 Accéder à mon espace
+    </a>
+</div>
+
+<div class="content" style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
+    <strong>💡 Besoin d'aide?</strong> Notre équipe d'experts est là pour vous accompagner. N'hésitez pas à nous contacter!
+</div>
+
+<div class="content" style="margin-top: 25px;">
+    <strong>📞 Nos coordonnées:</strong><br>
+    🇲🇦 Maroc: +212 5 22 86 34 36 | +212 6 66 67 97 79<br>
+    🇫🇷 France: +33 783 187 890<br>
+    ✉️ Email: contact@servicesbladi.com
+</div>
+{% endblock %}
