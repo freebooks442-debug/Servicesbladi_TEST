@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
     # Third party apps
     'rest_framework',
+    'corsheaders',  # Add CORS headers support
     # Custom apps
     'accounts',
     'services',
@@ -68,8 +69,9 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'accounts.Utilisateur'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Must be at the top
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise for Azure static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -229,6 +231,30 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
+
+# CORS settings for cross-origin requests
+if IS_PRODUCTION:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [
+        f"https://{os.environ.get('RAILWAY_STATIC_URL', '').replace('https://', '')}",
+        "https://your-frontend-domain.com",  # Add your actual frontend domain
+    ]
+    CORS_ALLOWED_ORIGINS = [origin for origin in CORS_ALLOWED_ORIGINS if origin.startswith('https://')]
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # Custom settings for ServicesBLADI
 SERVICESBLADI_ADMIN_EMAIL = 'admin@servicesbladi.com'
@@ -440,14 +466,42 @@ AUTHENTICATION_BACKENDS = [
 
 # Django Channels
 ASGI_APPLICATION = 'servicesbladi.asgi.application'
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-        'CONFIG': {
-            'capacity': 1500,  # default is 100
+
+# Channel Layers configuration
+if IS_PRODUCTION:
+    # Use Redis for production if available, otherwise fallback to InMemory
+    REDIS_URL = os.environ.get('REDIS_URL')
+    if REDIS_URL:
+        CHANNEL_LAYERS = {
+            'default': {
+                'BACKEND': 'channels_redis.core.RedisChannelLayer',
+                'CONFIG': {
+                    'hosts': [REDIS_URL],
+                    'capacity': 1500,
+                    'expiry': 60,
+                },
+            },
+        }
+    else:
+        # Fallback to InMemory for production without Redis
+        CHANNEL_LAYERS = {
+            'default': {
+                'BACKEND': 'channels.layers.InMemoryChannelLayer',
+                'CONFIG': {
+                    'capacity': 1500,
+                },
+            },
+        }
+else:
+    # Local development
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+            'CONFIG': {
+                'capacity': 1500,
+            },
         },
-    },
-}
+    }
 
 # Paramètres de session et de cache
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Utiliser la base de données pour les sessions
@@ -463,20 +517,96 @@ CACHES = {
 }
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'adval.devteam@gmail.com'
-EMAIL_HOST_PASSWORD = 'oeth fank mhsn lcjr'  # App password for Gmail
-DEFAULT_FROM_EMAIL = 'ServicesBladi <adval.devteam@gmail.com>'
+if IS_PRODUCTION:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'ServicesBladi <noreply@servicesbladi.com>')
+else:
+    # Local development - use console backend
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_HOST_USER = 'adval.devteam@gmail.com'
+    DEFAULT_FROM_EMAIL = 'ServicesBladi <adval.devteam@gmail.com>'
+
 EMAIL_SUBJECT_PREFIX = '[Adval Services] '
 
 # Chatbot MRE Configuration
-# Chatbot OpenAI Configuration (can be replaced with local alternative)
-# Note: For local development, you can set up a local OpenAI-compatible API
-# or use OpenAI directly with your own API key
-AZURE_OPENAI_ENDPOINT = ""  # Disabled for local development
-AZURE_OPENAI_API_KEY = ""   # Disabled for local development
+# Azure OpenAI Configuration for production
+if IS_PRODUCTION:
+    AZURE_OPENAI_ENDPOINT = os.environ.get('AZURE_OPENAI_ENDPOINT', '')
+    AZURE_OPENAI_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY', '')
+else:
+    # Disabled for local development
+    AZURE_OPENAI_ENDPOINT = ""  
+    AZURE_OPENAI_API_KEY = ""   
+
 AZURE_OPENAI_API_VERSION = "2025-01-01-preview"
 AZURE_OPENAI_MODEL = "gpt-4o"
+
+# Production Security Settings
+if IS_PRODUCTION:
+    # Security Headers
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # SSL Settings (Railway handles SSL termination)
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_TLS = True
+    
+    # Session Security
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+    
+    # Additional Security
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# File Upload Limits
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple' if not IS_PRODUCTION else 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'servicesbladi': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if not IS_PRODUCTION else 'INFO',
+            'propagate': False,
+        },
+    },
+}
