@@ -17,8 +17,12 @@ from django.utils.translation import gettext_lazy as _
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Environment detection
-IS_PRODUCTION = os.environ.get('DJANGO_ENV') == 'production' or os.environ.get('RAILWAY_ENVIRONMENT_NAME') is not None
+# Environment detection - Detect Render, Heroku, or manual production
+IS_PRODUCTION = (
+    os.environ.get('DJANGO_ENV') == 'production' or 
+    os.environ.get('RENDER') is not None or
+    os.environ.get('DYNO') is not None  # Heroku
+)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dj217004uhfoid4ut98h9843h98fn-dkn2f808jf9jkef')
@@ -29,16 +33,21 @@ DEBUG = not IS_PRODUCTION
 # Allowed hosts for deployment
 if IS_PRODUCTION:
     ALLOWED_HOSTS = [
-        os.environ.get('RAILWAY_STATIC_URL', '').replace('https://', '').replace('http://', ''),
+        # Render
+        os.environ.get('RENDER_EXTERNAL_HOSTNAME', ''),
+        '.onrender.com',
+        # Heroku
+        os.environ.get('HEROKU_APP_NAME', '') + '.herokuapp.com',
+        '.herokuapp.com',
+        # Custom domain
         os.environ.get('ALLOWED_HOST', ''),
-        '.railway.app',
-        '.up.railway.app',
+        # Local
         'localhost',
         '127.0.0.1',
         '0.0.0.0'
     ]
     # Clean empty hosts
-    ALLOWED_HOSTS = [host for host in ALLOWED_HOSTS if host]
+    ALLOWED_HOSTS = [host for host in ALLOWED_HOSTS if host and host != '.herokuapp.com']
 else:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
@@ -113,20 +122,30 @@ WSGI_APPLICATION = 'servicesbladi.wsgi.application'
 
 # Database configuration - production vs development
 if IS_PRODUCTION:
-    # Production database (Railway PostgreSQL)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('PGDATABASE'),
-            'USER': os.environ.get('PGUSER'),
-            'PASSWORD': os.environ.get('PGPASSWORD'),
-            'HOST': os.environ.get('PGHOST'),
-            'PORT': os.environ.get('PGPORT', '5432'),
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
+    # Production database configuration
+    # Support multiple deployment platforms
+    import dj_database_url
+    
+    # Try DATABASE_URL first (Render, Heroku style)
+    if os.environ.get('DATABASE_URL'):
+        DATABASES = {
+            'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
         }
-    }
+    else:
+        # Individual environment variables fallback
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get('PGDATABASE'),
+                'USER': os.environ.get('PGUSER'),
+                'PASSWORD': os.environ.get('PGPASSWORD'),
+                'HOST': os.environ.get('PGHOST'),
+                'PORT': os.environ.get('PGPORT', '5432'),
+                'OPTIONS': {
+                    'sslmode': 'require',
+                },
+            }
+        }
 else:
     # Local development database configuration (PostgreSQL)
     DATABASES = {
@@ -236,10 +255,14 @@ REST_FRAMEWORK = {
 if IS_PRODUCTION:
     CORS_ALLOW_ALL_ORIGINS = False
     CORS_ALLOWED_ORIGINS = [
-        f"https://{os.environ.get('RAILWAY_STATIC_URL', '').replace('https://', '')}",
-        "https://your-frontend-domain.com",  # Add your actual frontend domain
+        # Render 
+        f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')}",
+        # Custom domains
+        f"https://{os.environ.get('ALLOWED_HOST', '')}",
+        # Add your actual frontend domain if you have one
+        "https://your-frontend-domain.com",
     ]
-    CORS_ALLOWED_ORIGINS = [origin for origin in CORS_ALLOWED_ORIGINS if origin.startswith('https://')]
+    CORS_ALLOWED_ORIGINS = [origin for origin in CORS_ALLOWED_ORIGINS if origin.startswith('https://') and len(origin) > 8]
 else:
     CORS_ALLOW_ALL_ORIGINS = True
 
@@ -556,7 +579,7 @@ if IS_PRODUCTION:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     
-    # SSL Settings (Railway handles SSL termination)
+    # SSL Settings (handled by deployment platform)
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     USE_TLS = True
     

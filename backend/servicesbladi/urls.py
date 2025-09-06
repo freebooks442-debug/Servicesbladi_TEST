@@ -51,6 +51,8 @@ urlpatterns = [
       # Admin URL explicit redirect
     path('admin/', admin_login_redirect),
     
+    # Health checks for deployment platforms
+    path('health/', status_check, name='health_check'),
     path('status/', status_check, name='status_check'),
     path('media-test/', media_test_page, name='media_test'),
 
